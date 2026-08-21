@@ -1,0 +1,93 @@
+:root {
+  /* Core Sand / Editorial Palette (Light Mode - Default) */
+  --bg-color: #EFECE6;
+  --bg-alt: #E8E6DF;
+  --surface-color: #F7F6F2;
+  --surface-hover: #ECEAE3;
+  --surface-active: #E3DFD6;
+  --border-color: #DDD9CE;
+  --border-subtle: #E6E3DB;
+  --text-primary: #22211D;
+  --text-secondary: #7C7A73;
+  --text-muted: #A3A099;
+  --accent-color: #1C1B18;
+  --accent-text: #FFFFFF;
+  --accent-hover: #33322D;
+  --secondary-accent: #E2DDD2;
+  --secondary-accent-hover: #D7D0C3;
+
+  /* Semantic status colors */
+  --success-color: #2D6A4F;
+  --success-bg: #EAF4EE;
+  --success-border: #C2E2D0;
+  --error-color: #A4243B;
+  --error-bg: #FDF0F0;
+  --error-border: #F3CCD2;
+  --warning-color: #9E5B00;
+  --warning-bg: #FFF8E7;
+  --warning-border: #F3E1B8;
+  --info-color: #385E72;
+  --info-bg: #EEF4F8;
+  --info-border: #C8DBE8;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+
+  /* Shadows (subtle & restrained) */
+  --shadow-sm: 0 1px 2px rgba(34, 33, 29, 0.04);
+  --shadow-md: 0 3px 8px rgba(34, 33, 29, 0.06);
+  --shadow-lg: 0 8px 24px rgba(34, 33, 29, 0.09);
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-normal: 180ms ease;
+
+  /* Sizes */
+  --topbar-height: 44px;
+  --statusbar-height: 26px;
+}
+
+[data-theme='dark'] {
+  /* Dark Mode Palette */
+  --bg-color: #181715;
+  --bg-alt: #1F1E1B;
+  --surface-color: #262421;
+  --surface-hover: #2F2D29;
+  --surface-active: #383530;
+  --border-color: #383530;
+  --border-subtle: #2E2C27;
+  --text-primary: #EFECE6;
+  --text-secondary: #9B988E;
+  --text-muted: #6B6860;
+  --accent-color: #F7F6F2;
+  --accent-text: #181715;
+  --accent-hover: #ECEAE3;
+  --secondary-accent: #2E2C27;
+  --secondary-accent-hover: #3D3A34;
+
+  /* Semantic status colors for dark mode */
+  --success-color: #62B887;
+  --success-bg: #1B2E24;
+  --success-border: #234735;
+  --error-color: #E26D7D;
+  --error-bg: #351C20;
+  --error-border: #4D252C;
+  --warning-color: #E5A84B;
+  --warning-bg: #332514;
+  --warning-border: #4E381C;
+  --info-color: #6EA8D4;
+  --info-bg: #182632;
+  --info-border: #243B4E;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+}

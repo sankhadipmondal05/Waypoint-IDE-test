@@ -1,0 +1,52 @@
+.statusbar {
+  height: var(--statusbar-height);
+  background-color: var(--bg-alt);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.statusbar-left,
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.statusbar-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+}
+
+.statusbar-item.clickable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+}
+
+.statusbar-item.clickable:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.status-badge-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+}
+
+.status-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+}
