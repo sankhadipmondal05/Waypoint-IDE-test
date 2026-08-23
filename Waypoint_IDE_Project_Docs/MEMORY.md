@@ -256,3 +256,15 @@ If not, it probably does not belong in the initial version.
 - Inference latency verification and readiness state.
 - Reconfiguration accessible anytime via TopBar Settings `⚙` or StatusBar model click.
 
+### Phase 6 — AI Error Explanation Pipeline
+- Compiler/runtime remains authoritative; structured line, column, and diagnostic extraction.
+- Clear educational guidance cards explaining what occurred and how to fix errors without rewriting the solution.
+- Line navigation badge to jump straight to the offending statement in Monaco.
+
+### Phase 7 — Progressive Constraint-Driven AI Code Review
+- **Strict Anti-Autocompletion / No Full-Code Generation**: The AI never generates or overwrites the entire program.
+- **Targeted Snippet & Diff View**: Visual red/green diff box showing only the isolated bottleneck with an explicit **Copy Snippet** button.
+- **Iterative Single-Finding Cycle**: Reviews highlight **one major optimization at a time** (evaluating Big-O time/space, memory management, and idioms across C, C++, Java, and Python).
+- **Progressive Mastery Completion State**: Once all iterations are resolved, the console celebrates with: *"Review Complete. This is the best possible version to solve this problem. Well done!"*.
+
+

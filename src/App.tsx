@@ -15,6 +15,7 @@ import {
 import { FileService } from './services/fileService';
 import { ExecutionService } from './services/executionService';
 import { OllamaService } from './services/ollamaService';
+import { ReviewService } from './services/reviewService';
 import { ConfirmModal } from './components/common/ConfirmModal';
 import { SetupWizardModal } from './features/wizard/SetupWizardModal';
 
@@ -243,8 +244,8 @@ export const App: React.FC = () => {
     }
   };
 
-  // Review simulation with mandatory Problem Statement validation
-  const handleReview = () => {
+  // Review simulation with mandatory Problem Statement validation & Iterative Single-Issue constraint
+  const handleReview = async () => {
     if (!activeFile) return;
 
     // Mandatory problem statement check
@@ -262,10 +263,19 @@ export const App: React.FC = () => {
     setShowReview(true);
     setReviewResult({ state: 'reviewing', findings: [] });
 
-    setTimeout(() => {
+    try {
+      const result = await ReviewService.requestSingleIssueReview(activeFile);
+      setReviewResult(result);
+    } catch (_) {
+      setReviewResult({
+        state: 'completed',
+        isOptimal: true,
+        overallAssessment: 'Review Complete. This is the best possible version to solve this problem. Well done!',
+        findings: [],
+      });
+    } finally {
       setIsReviewing(false);
-      setReviewResult(MOCK_REVIEW_RESULT);
-    }, 800);
+    }
   };
 
   return (

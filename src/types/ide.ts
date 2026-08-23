@@ -56,5 +56,6 @@ export interface ReviewFinding {
 export interface ReviewResult {
   state: ReviewState;
   overallAssessment?: string;
+  isOptimal?: boolean;
   findings: ReviewFinding[];
 }

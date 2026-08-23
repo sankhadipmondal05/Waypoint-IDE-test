@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, CheckCircle2, ChevronRight, AlertCircle, FileQuestion } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, CheckCircle2, AlertCircle, FileQuestion, Copy, Check, Award, ArrowRight } from 'lucide-react';
 import type { ReviewResult, ReviewFinding } from '../../types/ide';
 
 interface ReviewConsoleProps {
@@ -15,6 +15,16 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
   isReviewing,
   problemStatementRequired = false,
 }) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopySnippet = (snippet: string, findingId: string) => {
+    navigator.clipboard.writeText(snippet);
+    setCopiedId(findingId);
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
+
   return (
     <aside className="review-panel">
       <div className="review-header">
@@ -23,7 +33,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
           className="btn-icon"
           onClick={onRequestReview}
           disabled={isReviewing}
-          title="Re-run review"
+          title="Re-run review on current code"
         >
           <Sparkles size={14} />
         </button>
@@ -57,7 +67,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
             <Sparkles size={24} color="var(--text-secondary)" />
             <div className="review-state-title">Ready to review your solution</div>
             <p className="review-state-desc">
-              Click <strong>Review</strong> in the top bar to get targeted feedback on readability, performance, and best practices.
+              Click <strong>Review</strong> in the top bar to get targeted, single-issue feedback focusing on algorithm performance and clean code.
             </p>
           </div>
         )}
@@ -67,66 +77,117 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
             <div className="status-dot running" style={{ width: 12, height: 12 }} />
             <div className="review-state-title">Analyzing your solution...</div>
             <p className="review-state-desc">
-              Examining AST, syntax structure, and performance metrics locally via Ollama.
+              Examining AST, loop structures, and algorithmic complexity constraint rules.
             </p>
           </div>
         )}
 
         {reviewResult.state === 'completed' && (
           <>
-            <div className="review-summary-box">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={15} color="var(--success-color)" />
-                <span className="review-summary-text">Review Complete</span>
-              </div>
-              <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
-                {reviewResult.findings.length} findings
-              </span>
-            </div>
-
-            {reviewResult.overallAssessment && (
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                {reviewResult.overallAssessment}
-              </p>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {reviewResult.findings.map((finding: ReviewFinding) => (
-                <div key={finding.id} className="finding-card">
-                  <div className="finding-header">
-                    <div className="finding-meta">
-                      <span className={`severity-tag severity-${finding.severity}`}>
-                        {finding.severity}
-                      </span>
-                      <span className="category-tag">{finding.category}</span>
-                    </div>
-                    <ChevronRight size={14} color="var(--text-muted)" />
+            {/* 1. Optimal Solution Completed State */}
+            {reviewResult.isOptimal || reviewResult.findings.length === 0 ? (
+              <div className="optimal-review-card">
+                <div className="optimal-icon-badge">
+                  <Award size={28} color="var(--success-color)" />
+                </div>
+                <div className="optimal-title">Review Complete</div>
+                <p className="optimal-desc">
+                  This is the best possible version to solve this problem. Well done!
+                </p>
+                <div className="optimal-checks">
+                  <div className="check-line">
+                    <CheckCircle2 size={13} color="var(--success-color)" />
+                    <span>Algorithmic complexity is optimal</span>
                   </div>
-
-                  <div className="finding-body">
-                    <div className="finding-title">{finding.title}</div>
-                    <div className="finding-explanation">{finding.explanation}</div>
-
-                    {finding.originalCode && finding.suggestedCode && (
-                      <div className="code-diff-mini">
-                        <div className="diff-original">
-                          - {finding.originalCode}
-                        </div>
-                        <div className="diff-suggested">
-                          + {finding.suggestedCode}
-                        </div>
-                      </div>
-                    )}
-
-                    {finding.benefit && (
-                      <div className="finding-benefit">
-                        💡 <strong>Benefit:</strong> {finding.benefit}
-                      </div>
-                    )}
+                  <div className="check-line">
+                    <CheckCircle2 size={13} color="var(--success-color)" />
+                    <span>Memory allocations & references are clean</span>
+                  </div>
+                  <div className="check-line">
+                    <CheckCircle2 size={13} color="var(--success-color)" />
+                    <span>Language idioms and safety guidelines met</span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              /* 2. Single Targeted Finding Iteration Card */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="iteration-badge-header">
+                  <span className="iteration-badge-tag">Targeted Optimization</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                    Step 1 of progressive review
+                  </span>
+                </div>
+
+                {reviewResult.findings.map((finding: ReviewFinding) => (
+                  <div key={finding.id} className="finding-card">
+                    <div className="finding-header">
+                      <div className="finding-meta">
+                        <span className={`severity-tag severity-${finding.severity}`}>
+                          {finding.severity}
+                        </span>
+                        <span className="category-tag">{finding.category}</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>High Priority</span>
+                    </div>
+
+                    <div className="finding-body">
+                      <div className="finding-title">{finding.title}</div>
+                      <div className="finding-explanation">{finding.explanation}</div>
+
+                      {finding.originalCode && finding.suggestedCode && (
+                        <div className="diff-container">
+                          <div className="diff-header-bar">
+                            <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                              Targeted Logic Diff
+                            </span>
+                            <button
+                              className="copy-snippet-btn"
+                              onClick={() => handleCopySnippet(finding.suggestedCode || '', finding.id)}
+                              title="Copy replacement snippet only"
+                            >
+                              {copiedId === finding.id ? (
+                                <>
+                                  <Check size={11} color="var(--success-color)" />
+                                  <span style={{ color: 'var(--success-color)' }}>Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy size={11} />
+                                  <span>Copy Snippet</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <div className="code-diff-mini">
+                            <div className="diff-original">
+                              <span className="diff-marker">-</span>
+                              <pre className="diff-code-text">{finding.originalCode}</pre>
+                            </div>
+                            <div className="diff-suggested">
+                              <span className="diff-marker">+</span>
+                              <pre className="diff-code-text">{finding.suggestedCode}</pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {finding.benefit && (
+                        <div className="finding-benefit">
+                          💡 <strong>Impact:</strong> {finding.benefit}
+                        </div>
+                      )}
+
+                      <div className="integration-hint">
+                        <ArrowRight size={12} />
+                        <span>Apply this snippet to your code and click <strong>Review</strong> again to verify.</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

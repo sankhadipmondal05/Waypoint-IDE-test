@@ -226,11 +226,48 @@ export class ExecutionService {
     if (ext === 'py' || ext === 'python') {
       const exec = this.runPythonInBrowser(file.content || '');
       const elapsed = Math.round(performance.now() - startTime + 6);
+
+      if (exec.exitCode !== 0) {
+        // Parse error line & explanation
+        let line = 1;
+        let col = 1;
+        let aiExplanation = 'A runtime or syntax error occurred during Python execution. Check variable definitions, indentation, and function arguments.';
+
+        if (exec.stderr.includes('SyntaxError')) {
+          const matchLine = exec.stderr.match(/line (\d+)/);
+          if (matchLine) line = parseInt(matchLine[1], 10);
+          aiExplanation = `**Syntax Error detected on Line ${line}:** Python syntax requires specific structural rules such as closing parentheses, colons (\`:\`) at the end of function/if/loop statements, and consistent indentation. Check that line ${line} has valid Python syntax.`;
+        } else if (exec.stderr.includes('NameError')) {
+          const matchName = exec.stderr.match(/name '(\w+)' is not defined/);
+          const varName = matchName ? matchName[1] : 'variable';
+          aiExplanation = `**Undefined Identifier:** The variable or function \`${varName}\` was referenced before being assigned or defined in the current scope. Verify the variable spelling or initialize \`${varName}\` earlier.`;
+        } else if (exec.stderr.includes('TypeError')) {
+          aiExplanation = `**Type Mismatch:** An operation or function was applied to an inappropriate object type (e.g. adding a string to an integer, or invoking a non-callable object). Check argument types.`;
+        } else if (exec.stderr.includes('IndexError')) {
+          aiExplanation = `**List Index Out of Bounds:** The program attempted to access an element by index that is outside the range of the sequence. Make sure the index is between 0 and \`len(sequence) - 1\`.`;
+        }
+
+        return {
+          state: 'error',
+          stdout: exec.stdout,
+          stderr: exec.stderr,
+          exitCode: exec.exitCode,
+          executionTimeMs: elapsed,
+          errorLocation: {
+            file: file.name,
+            line,
+            column: col,
+            message: exec.stderr.split('\n')[0] || 'Python runtime error',
+          },
+          aiExplanation,
+        };
+      }
+
       return {
-        state: exec.exitCode === 0 ? 'success' : 'error',
+        state: 'success',
         stdout: exec.stdout,
-        stderr: exec.stderr,
-        exitCode: exec.exitCode,
+        stderr: '',
+        exitCode: 0,
         executionTimeMs: elapsed,
       };
     }
