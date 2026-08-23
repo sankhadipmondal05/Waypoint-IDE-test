@@ -13,30 +13,30 @@ export class ReviewService {
     try {
       const ollamaHealth = await OllamaService.checkOllamaHealth();
       if (ollamaHealth.isRunning) {
-        // Construct prompt enforcing single targeted snippet constraint
+        // Construct prompt enforcing single targeted snippet constraint and contextualizing with user's problem statement
         const systemPrompt = `You are Waypoint's AI Programming Mentor.
 Rules:
-1. NEVER generate or rewrite the whole solution file.
-2. Identify ONLY the single highest-priority optimization or code cleanliness finding.
-3. Return ONLY the critical targeted snippet to change (red deletion vs green insertion).
-4. If the code is already optimal and clean, output "STATUS: OPTIMAL".
-5. Return JSON format:
+1. Context: Use BOTH the user's provided Problem Statement and the current code to evaluate correctness and efficiency.
+2. NEVER generate or rewrite the whole solution file.
+3. Identify ONLY the single highest-priority optimization, Big-O bottleneck, or code cleanliness finding.
+4. Return ONLY the critical targeted snippet to change (red deletion vs green insertion).
+5. If the code is already optimal, clean, and satisfies the problem requirements, output "STATUS: OPTIMAL".
+6. Return JSON format:
 {
   "isOptimal": false,
-  "title": "Short title",
+  "title": "Short title (e.g. Use standard numeric algorithms)",
   "category": "performance" | "readability" | "maintainability",
   "severity": "high" | "medium" | "low",
-  "explanation": "Why this change is needed",
-  "benefit": "Big-O or clarity benefit",
+  "explanation": "Why this change is needed based on the problem statement requirements",
+  "benefit": "Time/Space complexity or clarity improvement",
   "originalCode": "lines to delete",
   "suggestedCode": "replacement lines"
 }`;
 
-        const userPrompt = `File: ${file.name}
-Language: ${file.language || 'cpp'}
-Problem Statement: ${file.problemStatement || 'Not provided'}
+        const userPrompt = `### PROBLEM STATEMENT (Context from Top Bar):
+${file.problemStatement?.trim() || 'No problem statement provided.'}
 
-Code:
+### CURRENT FILE: ${file.name} (${file.language || 'code'})
 \`\`\`
 ${file.content || ''}
 \`\`\``;
