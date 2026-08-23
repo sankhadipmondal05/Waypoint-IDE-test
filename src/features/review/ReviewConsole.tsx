@@ -114,9 +114,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div className="iteration-badge-header">
                   <span className="iteration-badge-tag">Targeted Optimization</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    Step 1 of progressive review
-                  </span>
+                  <span className="iteration-badge-sub">Step 1 of progressive review</span>
                 </div>
 
                 {reviewResult.findings.map((finding: ReviewFinding) => (
@@ -128,7 +126,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
                         </span>
                         <span className="category-tag">{finding.category}</span>
                       </div>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>High Priority</span>
+                      <span className="finding-priority">High Priority</span>
                     </div>
 
                     <div className="finding-body">
@@ -138,9 +136,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
                       {finding.originalCode && finding.suggestedCode && (
                         <div className="diff-container">
                           <div className="diff-header-bar">
-                            <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                              Targeted Logic Diff
-                            </span>
+                            <span className="diff-header-title">Targeted Logic Diff</span>
                             <button
                               className="copy-snippet-btn"
                               onClick={() => handleCopySnippet(finding.suggestedCode || '', finding.id)}
@@ -180,7 +176,7 @@ export const ReviewConsole: React.FC<ReviewConsoleProps> = ({
                       )}
 
                       <div className="integration-hint">
-                        <ArrowRight size={12} />
+                        <ArrowRight size={13} />
                         <span>Apply this snippet to your code and click <strong>Review</strong> again to verify.</span>
                       </div>
                     </div>
