@@ -8,6 +8,7 @@ interface OutputPanelProps {
   onTabChange: (tab: 'output' | 'terminal') => void;
   result: ExecutionResult | null;
   onClearOutput: () => void;
+  onRunInput?: (input: string) => void;
   activeFile?: FileItem | null;
   files?: FileItem[];
 }
@@ -17,17 +18,19 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
   onTabChange,
   result,
   onClearOutput,
+  onRunInput,
   activeFile,
   files = [],
 }) => {
   // Terminal emulator state
   const [terminalHistory, setTerminalHistory] = useState<Array<{ type: 'input' | 'output' | 'error' | 'system'; text: string }>>([
-    { type: 'system', text: 'Waypoint IDE Terminal [Version 1.1.0]' },
-    { type: 'system', text: 'Type "help" for a list of commands, or "run" / "python <file>" to execute files.' },
+    { type: 'system', text: 'Waypoint IDE Terminal [Ready]' },
+    { type: 'system', text: 'Type standard system commands (e.g. dir, ls, python <file>, gcc <file>, help) or "run" to execute files.' },
   ]);
   const [commandInput, setCommandInput] = useState('');
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
   const [commandList, setCommandList] = useState<string[]>([]);
+
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -66,12 +69,11 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
         type: 'output',
         text: `Available commands:
   run [file]         - Execute the active or specified file
-  python <file>      - Run python script (e.g., python test.py)
-  node <file>        - Run javascript file
+  python <file>      - Run python script
+  gcc / g++ <file>   - Compile C/C++ source
   ls / dir           - List files in current workspace
   cat <file>         - Display file contents
   echo <message>     - Print message
-  pwd                - Print current working directory
   clear              - Clear terminal window
   help               - Show this help menu`,
       });
@@ -79,63 +81,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
       return;
     }
 
-    if (mainCmd === 'pwd') {
-      newHistory.push({ type: 'output', text: '/workspace' });
-      setTerminalHistory(newHistory);
-      return;
-    }
-
-    if (mainCmd === 'echo') {
-      newHistory.push({ type: 'output', text: args.join(' ') });
-      setTerminalHistory(newHistory);
-      return;
-    }
-
-    if (mainCmd === 'ls' || mainCmd === 'dir') {
-      const getFileNames = (items: FileItem[]): string[] => {
-        let names: string[] = [];
-        for (const item of items) {
-          names.push(item.isFolder ? `${item.name}/` : item.name);
-          if (item.children) {
-            names = names.concat(getFileNames(item.children).map((n) => `  ${n}`));
-          }
-        }
-        return names;
-      };
-      const listing = getFileNames(files).join('\n');
-      newHistory.push({ type: 'output', text: listing || '(empty workspace)' });
-      setTerminalHistory(newHistory);
-      return;
-    }
-
-    if (mainCmd === 'cat') {
-      const targetName = args[0];
-      if (!targetName) {
-        newHistory.push({ type: 'error', text: 'Usage: cat <filename>' });
-        setTerminalHistory(newHistory);
-        return;
-      }
-      const findFileByName = (items: FileItem[], name: string): FileItem | null => {
-        for (const it of items) {
-          if (it.name === name && !it.isFolder) return it;
-          if (it.children) {
-            const found = findFileByName(it.children, name);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-      const target = findFileByName(files, targetName);
-      if (target) {
-        newHistory.push({ type: 'output', text: target.content || '(empty file)' });
-      } else {
-        newHistory.push({ type: 'error', text: `cat: ${targetName}: No such file` });
-      }
-      setTerminalHistory(newHistory);
-      return;
-    }
-
-    if (mainCmd === 'run' || mainCmd === 'python' || mainCmd === 'node' || mainCmd === 'g++' || mainCmd === 'javac') {
+    if (mainCmd === 'run') {
       let targetFile = activeFile;
       if (args[0]) {
         const findFileByName = (items: FileItem[], name: string): FileItem | null => {
@@ -150,24 +96,19 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
         };
         targetFile = findFileByName(files, args[0]);
       }
-
       if (!targetFile) {
-        newHistory.push({ type: 'error', text: `Error: No file specified or open to execute.` });
+        newHistory.push({ type: 'error', text: `run: File not found: ${args[0] || 'No active file'}` });
         setTerminalHistory(newHistory);
         return;
       }
 
-      newHistory.push({ type: 'system', text: `[Executing ${targetFile.name}...]` });
-      setTerminalHistory(newHistory);
+      newHistory.push({ type: 'system', text: `[Running ${targetFile.name}...]` });
+      setTerminalHistory([...newHistory]);
 
       const execResult = await ExecutionService.runProgram(targetFile);
       const updatedHistory = [...newHistory];
-      if (execResult.stdout) {
-        updatedHistory.push({ type: 'output', text: execResult.stdout });
-      }
-      if (execResult.stderr) {
-        updatedHistory.push({ type: 'error', text: execResult.stderr });
-      }
+      if (execResult.stdout) updatedHistory.push({ type: 'output', text: execResult.stdout });
+      if (execResult.stderr) updatedHistory.push({ type: 'error', text: execResult.stderr });
       updatedHistory.push({
         type: 'system',
         text: `[Process completed with exit code ${execResult.exitCode} (${execResult.executionTimeMs}ms)]`,
@@ -176,11 +117,20 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
       return;
     }
 
-    newHistory.push({
-      type: 'error',
-      text: `${mainCmd}: command not found. Type "help" for available commands.`,
-    });
-    setTerminalHistory(newHistory);
+    // Execute real system command via native Tauri backend
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const res: any = await invoke('run_terminal_command', { command: cmd });
+      if (res.stdout) newHistory.push({ type: 'output', text: res.stdout });
+      if (res.stderr) newHistory.push({ type: 'error', text: res.stderr });
+      if (!res.stdout && !res.stderr) {
+        newHistory.push({ type: 'system', text: `[Command finished with code ${res.exit_code ?? 0}]` });
+      }
+    } catch (err: any) {
+      newHistory.push({ type: 'error', text: `Error running command: ${err?.message || String(err)}` });
+    }
+
+    setTerminalHistory([...newHistory]);
   };
 
   const handleTerminalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -247,12 +197,12 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
         </div>
       </div>
 
-      <div className="output-content">
+      <div className="output-content selectable-output">
         {activeTab === 'output' ? (
           <div>
             {!result ? (
               <div style={{ color: 'var(--text-muted)' }}>
-                Press <strong>Run</strong> in the top bar to compile and execute the currently opened file.
+                Press <strong>Run</strong> in the top bar to compile and execute the currently opened file. You can select and copy output, or use the <strong>TERMINAL</strong> tab to execute programs interactively.
               </div>
             ) : (
               <div>
@@ -291,7 +241,35 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                     <div style={{ color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 600 }}>
                       Output:
                     </div>
-                    <pre className="raw-output">{result.stdout}</pre>
+                    {result.inputNeeded ? (
+                      <div className="interactive-prompt-row">
+                        <span className="raw-prompt-text">{result.stdout}</span>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (commandInput.trim()) {
+                              const inputStr = commandInput;
+                              setCommandInput('');
+                              if (onRunInput) {
+                                onRunInput(inputStr);
+                              }
+                            }
+                          }}
+                          className="inline-prompt-form"
+                        >
+                          <input
+                            type="text"
+                            className="inline-prompt-input"
+                            value={commandInput}
+                            onChange={(e) => setCommandInput(e.target.value)}
+                            autoFocus
+                            placeholder="type here..."
+                          />
+                        </form>
+                      </div>
+                    ) : (
+                      <pre className="raw-output selectable-text">{result.stdout}</pre>
+                    )}
                   </div>
                 )}
 
@@ -300,7 +278,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                     <div style={{ color: 'var(--error-color)', marginBottom: 4, fontWeight: 600 }}>
                       Compiler / Runtime Error:
                     </div>
-                    <pre className="raw-output" style={{ color: 'var(--error-color)' }}>
+                    <pre className="raw-output selectable-text" style={{ color: 'var(--error-color)' }}>
                       {result.stderr}
                     </pre>
                   </div>
@@ -321,29 +299,29 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                       <Lightbulb size={14} color="var(--warning-color)" />
                       <span>Understanding this error</span>
                     </div>
-                    <div className="ai-card-body">{result.aiExplanation}</div>
+                    <div className="ai-card-body selectable-text">{result.aiExplanation}</div>
                   </div>
                 )}
               </div>
             )}
           </div>
         ) : (
-          <div className="interactive-terminal-container" onClick={() => inputRef.current?.focus()}>
+          <div className="interactive-terminal-container selectable-output" onClick={() => inputRef.current?.focus()}>
             {terminalHistory.map((item, idx) => (
               <div key={idx} className={`terminal-history-item ${item.type}`}>
                 {item.type === 'input' ? (
                   <div className="terminal-line">
-                    <span className="terminal-prompt">user@waypoint-ide:~/workspace$</span>
+                    <span className="terminal-prompt">waypoint:~/workspace$</span>
                     <span className="terminal-cmd-text">{item.text}</span>
                   </div>
                 ) : (
-                  <pre className={`terminal-output-text ${item.type}`}>{item.text}</pre>
+                  <pre className={`terminal-output-text selectable-text ${item.type}`}>{item.text}</pre>
                 )}
               </div>
             ))}
 
             <form onSubmit={handleTerminalSubmit} className="terminal-input-form">
-              <span className="terminal-prompt">user@waypoint-ide:~/workspace$</span>
+              <span className="terminal-prompt">waypoint:~/workspace$</span>
               <input
                 ref={inputRef}
                 type="text"

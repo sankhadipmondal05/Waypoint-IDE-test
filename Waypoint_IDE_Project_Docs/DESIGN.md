@@ -10,6 +10,8 @@ It should not look like a futuristic AI product or a direct VS Code clone.
 ## 2. Color Tokens
 
 ```css
+
+Light Mode
 :root {
   --bg-color: #EFECE6;
   --bg-alt: #E8E6DF;
@@ -20,6 +22,19 @@ It should not look like a futuristic AI product or a direct VS Code clone.
   --accent-color: #1C1B18;
   --accent-text: #FFFFFF;
   --secondary-accent: #E2DDD2;
+}
+
+Dark Mode
+:root {
+--bg-color: #181715;
+--bg-alt: #1F1E1B;
+--surface-color: #262421;
+--border-color: #383530;
+--text-primary: #EFECE6;
+--text-secondary: #9B988E;
+--accent-color: #F7F6F2;
+--accent-text: #181715;
+--secondary-accent: #2E2C27;
 }
 ```
 

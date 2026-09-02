@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import type { Monaco, OnMount } from '@monaco-editor/react';
-import { FileCode } from 'lucide-react';
 import type { FileItem } from '../../types/ide';
 import { TabBar } from './TabBar';
 import { FileIcon } from '../../components/common/FileIcon';
 import { defineMonacoThemes } from '../../styles/monacoTheme';
+
+import { WelcomeTab } from '../welcome/WelcomeTab';
 
 interface EditorPaneProps {
   openTabs: FileItem[];
@@ -14,6 +15,8 @@ interface EditorPaneProps {
   onCloseTab: (fileId: string, e: React.MouseEvent) => void;
   onChangeContent: (content: string) => void;
   onSave: () => void;
+  onNewFile?: (fileName: string) => void;
+  onOpenWizard?: () => void;
   theme: 'light' | 'dark';
   errorLine?: number;
 }
@@ -25,11 +28,17 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
   onCloseTab,
   onChangeContent,
   onSave,
+  onNewFile = () => {},
+  onOpenWizard = () => {},
   theme,
   errorLine,
 }) => {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const [fontSize, setFontSize] = React.useState<number>(() => {
+    const saved = localStorage.getItem('waypoint_editor_fontsize');
+    return saved ? parseInt(saved, 10) : 14;
+  });
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -41,7 +50,60 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       onSave();
     });
+
+    // Add Ctrl+= (Zoom In)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Equal, () => {
+      setFontSize((prev) => {
+        const next = Math.min(prev + 1, 32);
+        localStorage.setItem('waypoint_editor_fontsize', next.toString());
+        return next;
+      });
+    });
+
+    // Add Ctrl+- (Zoom Out)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Minus, () => {
+      setFontSize((prev) => {
+        const next = Math.max(prev - 1, 10);
+        localStorage.setItem('waypoint_editor_fontsize', next.toString());
+        return next;
+      });
+    });
+
+    // Add Ctrl+0 (Reset Zoom)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit0, () => {
+      setFontSize(14);
+      localStorage.setItem('waypoint_editor_fontsize', '14');
+    });
   };
+
+  // Global window listener for Ctrl + / - / 0
+  React.useEffect(() => {
+    const handleGlobalZoom = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          setFontSize((prev) => {
+            const next = Math.min(prev + 1, 32);
+            localStorage.setItem('waypoint_editor_fontsize', next.toString());
+            return next;
+          });
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          setFontSize((prev) => {
+            const next = Math.max(prev - 1, 10);
+            localStorage.setItem('waypoint_editor_fontsize', next.toString());
+            return next;
+          });
+        } else if (e.key === '0') {
+          e.preventDefault();
+          setFontSize(14);
+          localStorage.setItem('waypoint_editor_fontsize', '14');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalZoom);
+    return () => window.removeEventListener('keydown', handleGlobalZoom);
+  }, []);
 
   React.useEffect(() => {
     if (monacoRef.current) {
@@ -76,13 +138,18 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
   if (!activeFile) {
     return (
       <div className="editor-container">
-        <div className="editor-empty-state">
-          <FileCode size={36} color="var(--border-color)" />
-          <h3 className="empty-state-title">No File Open</h3>
-          <p className="empty-state-subtitle">
-            Select a file from the Project Explorer on the left to start coding and learning.
-          </p>
-        </div>
+        {openTabs.length > 0 && (
+          <TabBar
+            openTabs={openTabs}
+            activeFileId={null}
+            onSelectTab={onSelectTab}
+            onCloseTab={onCloseTab}
+          />
+        )}
+        <WelcomeTab
+          onNewFile={onNewFile}
+          onOpenWizard={onOpenWizard}
+        />
       </div>
     );
   }
@@ -142,9 +209,12 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
           onMount={handleEditorDidMount}
           onChange={(value) => onChangeContent(value || '')}
           options={{
-            fontSize: 13,
-            fontFamily: "var(--font-mono), 'JetBrains Mono', 'Fira Code', monospace",
-            lineHeight: 21,
+            fontSize: fontSize,
+            fontFamily: "'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace",
+            fontWeight: '500',
+            lineHeight: Math.round(fontSize * 1.55),
+            fontLigatures: true,
+            mouseWheelZoom: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
             automaticLayout: true,

@@ -35,6 +35,9 @@ export interface ExecutionResult {
     message: string;
   };
   aiExplanation?: string;
+  inputNeeded?: boolean;
+  promptText?: string;
+  inputProvided?: string;
 }
 
 export type ReviewState = 'idle' | 'reviewing' | 'completed';

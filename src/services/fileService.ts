@@ -30,16 +30,60 @@ export class FileService {
   }
 
   /**
+   * Default starter files for newly opened workspaces (clean empty workspace)
+   */
+  static getDefaultProjectFiles(): FileItem[] {
+    return [];
+  }
+
+  /**
    * Create a new file item helper
    */
   static createNewFile(name: string, content: string = ''): FileItem {
     const ext = name.split('.').pop()?.toLowerCase();
     let language: any = 'text';
-    if (ext === 'cpp' || ext === 'cxx' || ext === 'cc') language = 'cpp';
-    else if (ext === 'c' || ext === 'h') language = 'c';
-    else if (ext === 'py') language = 'python';
-    else if (ext === 'java') language = 'java';
-    else if (ext === 'md') language = 'markdown';
+    let defaultTemplate = content;
+
+    if (ext === 'cpp' || ext === 'cxx' || ext === 'cc') {
+      language = 'cpp';
+      if (!defaultTemplate) {
+        defaultTemplate = `#include <iostream>
+
+int main() {
+    std::cout << "Hello, Waypoint!" << std::endl;
+    return 0;
+}`;
+      }
+    } else if (ext === 'c' || ext === 'h') {
+      language = 'c';
+      if (!defaultTemplate) {
+        defaultTemplate = `#include <stdio.h>
+
+int main() {
+    printf("Hello, Waypoint!\\n");
+    return 0;
+}`;
+      }
+    } else if (ext === 'py') {
+      language = 'python';
+      if (!defaultTemplate) {
+        defaultTemplate = `def main():
+    print("Hello, Waypoint!")
+
+if __name__ == "__main__":
+    main()`;
+      }
+    } else if (ext === 'java') {
+      language = 'java';
+      const className = name.split('.')[0] || 'Main';
+      if (!defaultTemplate) {
+        defaultTemplate = `public class ${className} {
+    public static void main(String[] args) {
+        System.out.println("Hello, Waypoint!");
+    }
+}`;
+      }
+    } else if (ext === 'md') language = 'markdown';
     else if (ext === 'json') language = 'json';
 
     return {
@@ -48,7 +92,7 @@ export class FileService {
       path: `/${name}`,
       isFolder: false,
       language,
-      content,
+      content: defaultTemplate,
       problemStatement: '',
       isModified: false,
     };

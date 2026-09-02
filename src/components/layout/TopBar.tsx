@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Sparkles, Settings, FolderTree, Terminal, PanelsRightBottom, ArrowUpRight, FileQuestion, Sun, Moon } from 'lucide-react';
+import appIcon from '../../assets/AppIcon.png';
 
 interface TopBarProps {
   problemStatement: string;
@@ -46,9 +47,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     <header className="topbar">
       {/* Left section: App Brand + File-specific Problem Statement Area */}
       <div className="topbar-left">
-        <div className="app-brand">
-          <div className="brand-icon">W</div>
-          <span className="brand-name">Waypoint</span>
+        <div className="app-brand" title="Waypoint IDE">
+          <img src={appIcon} alt="Waypoint IDE" className="brand-icon-img" />
         </div>
 
         {/* Problem Statement input area per opened file */}
@@ -70,8 +70,8 @@ export const TopBar: React.FC<TopBarProps> = ({
               isProblemEmptyWarning
                 ? '⚠️ Problem statement is required for AI review!'
                 : activeFileName
-                ? `Enter problem description for ${activeFileName}...`
-                : 'Open a file to enter problem description...'
+                  ? `Enter problem description for ${activeFileName}...`
+                  : 'Open a file to enter problem description...'
             }
             disabled={!activeFileName}
             autoFocus={isProblemEmptyWarning}

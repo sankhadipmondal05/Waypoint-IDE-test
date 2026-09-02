@@ -41,6 +41,14 @@
   letter-spacing: -0.5px;
 }
 
+.brand-icon-img {
+  width: 33px;
+  height: 33px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
 .brand-name {
   font-family: var(--font-sans);
   font-weight: 600;
@@ -54,7 +62,7 @@
   display: flex;
   align-items: center;
   flex: 1;
-  max-width: 380px;
+  max-width: 480px;
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -76,9 +84,19 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 .problem-label {

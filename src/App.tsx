@@ -7,11 +7,6 @@ import { ReviewConsole } from './features/review/ReviewConsole';
 import { StatusBar } from './components/layout/StatusBar';
 import { Resizer } from './components/common/Resizer';
 import type { FileItem, ExecutionResult, ReviewResult } from './types/ide';
-import {
-  INITIAL_FILES,
-  MOCK_SUCCESS_RUN,
-  MOCK_REVIEW_RESULT,
-} from './utils/mockData';
 import { FileService } from './services/fileService';
 import { ExecutionService } from './services/executionService';
 import { OllamaService } from './services/ollamaService';
@@ -31,13 +26,19 @@ export const App: React.FC = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // Files state (loaded from storage or initialized with sample files)
+  // Files state (clean empty workspace on start or restored from user storage)
   const [files, setFiles] = useState<FileItem[]>(() => {
-    return FileService.loadFilesFromStorage() || INITIAL_FILES;
+    return FileService.loadFilesFromStorage() || [];
   });
 
-  const [openTabs, setOpenTabs] = useState<FileItem[]>([INITIAL_FILES[0].children![0]]);
-  const [activeFileId, setActiveFileId] = useState<string | null>(INITIAL_FILES[0].children![0].id);
+  const [openTabs, setOpenTabs] = useState<FileItem[]>(() => {
+    const loaded = FileService.loadFilesFromStorage();
+    return loaded && loaded.length > 0 ? [loaded[0]] : [];
+  });
+  const [activeFileId, setActiveFileId] = useState<string | null>(() => {
+    const loaded = FileService.loadFilesFromStorage();
+    return loaded && loaded.length > 0 ? loaded[0].id : null;
+  });
 
   // Auto-save files tree to storage on changes
   useEffect(() => {
@@ -51,22 +52,100 @@ export const App: React.FC = () => {
   // Delete confirmation modal state
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; isFolder: boolean } | null>(null);
 
-  // Panel layout sizes & visibility
+  // Panel layout sizes & visibility (Review panel defaults to closed)
   const [leftWidth, setLeftWidth] = useState(240);
   const [rightWidth, setRightWidth] = useState(320);
   const [bottomHeight, setBottomHeight] = useState(220);
 
   const [showExplorer, setShowExplorer] = useState(true);
   const [showOutput, setShowOutput] = useState(true);
-  const [showReview, setShowReview] = useState(true);
+  const [showReview, setShowReview] = useState(false);
 
   // Output and review state
   const [outputTab, setOutputTab] = useState<'output' | 'terminal'>('output');
-  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(MOCK_SUCCESS_RUN);
-  const [reviewResult, setReviewResult] = useState<ReviewResult>(MOCK_REVIEW_RESULT);
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+  const [reviewResult, setReviewResult] = useState<ReviewResult>({
+    state: 'idle',
+    isOptimal: false,
+    findings: [],
+  });
   const [isRunning, setIsRunning] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [problemStatementRequired, setProblemStatementRequired] = useState(false);
+  const [isOllamaConnected, setIsOllamaConnected] = useState<boolean>(false);
+  const [isModelReady, setIsModelReady] = useState<boolean>(false);
+  const [isModelDownloading, setIsModelDownloading] = useState<boolean>(false);
+
+  // Sync, spawn, and check readiness of selected Ollama model in real-time via native backend
+  useEffect(() => {
+    let checkInterval: any = null;
+    let isPullTriggered = false;
+
+    const checkModelStatus = async () => {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        const status: { is_running: boolean; models: string[] } = await invoke('get_ollama_status');
+        
+        if (status.is_running) {
+          setIsOllamaConnected(true);
+          const models = (status.models || []).map((m) => m.toLowerCase().trim());
+          const target = activeModel.toLowerCase().trim();
+          const targetPrefix = target.split(':')[0];
+          
+          // Check exact match, tag match, or base name match
+          const isPresent = models.some(
+            (m) => m === target || m.startsWith(targetPrefix) || target.startsWith(m.split(':')[0])
+          );
+          
+          if (isPresent) {
+            setIsModelReady(true);
+            setIsModelDownloading(false);
+          } else {
+            setIsModelReady(false);
+            setIsModelDownloading(true);
+            
+            // As soon as Ollama is detected running, automatically trigger pull/launch of selected model
+            if (!isPullTriggered) {
+              isPullTriggered = true;
+              invoke('trigger_ollama_pull', { model: activeModel }).catch(() => {});
+            }
+          }
+        } else {
+          setIsOllamaConnected(false);
+          setIsModelReady(false);
+          setIsModelDownloading(false);
+        }
+      } catch (_) {
+        setIsOllamaConnected(false);
+        setIsModelReady(false);
+      }
+    };
+
+    // Asynchronously dispatch daemon start and model check without blocking UI
+    setTimeout(() => {
+      import('@tauri-apps/api/core').then(({ invoke }) => {
+        invoke('ensure_ollama_running').catch(() => {});
+      }).catch(() => {});
+      checkModelStatus();
+    }, 150);
+
+    // Poll tags and engine health every 4s
+    checkInterval = setInterval(checkModelStatus, 4000);
+
+    const handleBeforeUnload = () => {
+      try {
+        import('@tauri-apps/api/core').then(({ invoke }) => {
+          invoke('kill_ollama_daemon');
+        });
+      } catch (_) {}
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [activeModel]);
 
   const activeFile = openTabs.find((t) => t.id === activeFileId) || null;
 
@@ -217,20 +296,19 @@ export const App: React.FC = () => {
     }
   };
 
-  // Real Run Execution Engine trigger
-  const handleRun = async () => {
+  // Real Run Execution Engine trigger (with optional stdin)
+  const handleRun = async (stdinInput?: string) => {
     if (!activeFile) return;
 
-    // Auto-save before run
-    handleSaveFile();
-
+    // Auto-sync active file content directly into runner
     setIsRunning(true);
     setShowOutput(true);
     setOutputTab('output');
     setExecutionResult({ state: 'running', stdout: '', stderr: '', exitCode: 0 });
 
     try {
-      const result = await ExecutionService.runProgram(activeFile);
+      const cleanStdin = typeof stdinInput === 'string' ? stdinInput : undefined;
+      const result = await ExecutionService.runProgram(activeFile, cleanStdin);
       setExecutionResult(result);
     } catch (err: any) {
       setExecutionResult({
@@ -286,7 +364,7 @@ export const App: React.FC = () => {
         activeFileName={activeFile?.name}
         isRunning={isRunning}
         isReviewing={isReviewing}
-        onRun={handleRun}
+        onRun={() => handleRun()}
         onReview={handleReview}
         showExplorer={showExplorer}
         onToggleExplorer={() => setShowExplorer(!showExplorer)}
@@ -311,7 +389,7 @@ export const App: React.FC = () => {
                 onSelectFile={handleSelectFile}
                 onNewFile={handleCreateNewFile}
                 onNewFolder={handleCreateNewFolder}
-                onRefresh={() => setFiles(FileService.loadFilesFromStorage() || INITIAL_FILES)}
+                onRefresh={() => setFiles(FileService.loadFilesFromStorage() || FileService.getDefaultProjectFiles())}
                 onDeleteItem={handleDeleteItem}
                 onMoveItem={handleMoveItem}
               />
@@ -333,6 +411,8 @@ export const App: React.FC = () => {
               onCloseTab={handleCloseTab}
               onChangeContent={handleChangeContent}
               onSave={handleSaveFile}
+              onNewFile={handleCreateNewFile}
+              onOpenWizard={() => setShowWizard(true)}
               theme={theme}
               errorLine={executionResult?.errorLocation?.line}
             />
@@ -350,6 +430,7 @@ export const App: React.FC = () => {
                   onTabChange={setOutputTab}
                   result={executionResult}
                   onClearOutput={() => setExecutionResult(null)}
+                  onRunInput={(input) => handleRun(input)}
                   activeFile={activeFile}
                   files={files}
                 />
@@ -381,6 +462,9 @@ export const App: React.FC = () => {
         activeFile={activeFile}
         language={activeFile?.language || 'c++'}
         activeModel={activeModel}
+        isOllamaConnected={isOllamaConnected}
+        isModelReady={isModelReady}
+        isModelDownloading={isModelDownloading}
         onConfigureAI={() => setShowWizard(true)}
       />
 
