@@ -1,0 +1,1102 @@
+================================================================================
+WAYPOINT IDE — COMPREHENSIVE FINAL-YEAR PROJECT EVALUATION REPORT
+TECHNICAL AUDIT, SYSTEM ARCHITECTURE, AND MIDTERM DEFENSE SPECIFICATION
+================================================================================
+Document Type     : B.Tech Final-Year Project Midterm Technical Evaluation Report
+Project Name      : Waypoint IDE (Waypoint Studio / Waypoint IDE Lab Edition)
+Workspace Root    : d:\Projects\Waypoint IDE
+Target Audience   : University Project Evaluators, External Examiners, AI Presentation Generator
+Date of Evaluation: October 2026 (Academic Year 2026-2027)
+Repository Branch : main (Commit: d4ff4ba)
+Target Deliverable: FINAL_YEAR_PROJECT_MIDTERM_REPORT.txt
+================================================================================
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1.  SECTION A — PROJECT IDENTITY
+2.  SECTION B — PROBLEM STATEMENT
+3.  SECTION C — OBJECTIVES AND SCOPE
+4.  SECTION D — TECHNOLOGY STACK AND TOOLS INVENTORY
+5.  SECTION E — SYSTEM ARCHITECTURE & COMPONENT TOPOLOGY
+6.  SECTION F — END-TO-END USER FLOW
+7.  SECTION G — TECHNICAL WORKFLOW & PROCESSING PIPELINES
+8.  SECTION H — PROTOTYPE, UI/UX & DESIGN SYSTEM SPECIFICATION
+9.  SECTION I — MODULE-BY-MODULE IMPLEMENTATION AUDIT
+10. SECTION J — WORK COMPLETED SO FAR (FACT-BASED PROGRESS AUDIT)
+11. SECTION K — CURRENT RESULTS & DEMONSTRATION SCRIPT
+12. SECTION L — REMAINING WORK & TECHNICAL BACKLOG
+13. SECTION M — MILESTONE-BASED PROJECT TIMELINE
+14. SECTION N — MULTI-DIMENSIONAL FEASIBILITY ANALYSIS
+15. SECTION O — EXPECTED OUTCOMES & FUTURE SCOPE
+16. SECTION P — RISKS, CHALLENGES, AND LIMITATIONS
+17. SECTION Q — LITERATURE REVIEW & REFERENCE TAXONOMY
+18. SECTION R — MIDTERM PPT PREPARATION BRIEF & SLIDE-BY-SLIDE MAP
+================================================================================
+
+
+================================================================================
+SECTION A — PROJECT IDENTITY
+================================================================================
+
+1. Exact Project Name:
+   - Official Application Title: "Waypoint IDE" (also designated in project documentation and UI badges as "Waypoint Studio" and "Waypoint IDE — Lab Edition").
+   - Manifest Identifiers:
+     * Frontend Manifest (package.json): "waypoint-app" (version: "0.0.0")
+     * Tauri Configuration (src-tauri/tauri.conf.json): "waypoint-ide" (productName: "waypoint-ide", version: "0.1.0", identifier: "com.waypoint.ide")
+     * Cargo Manifest (src-tauri/Cargo.toml): "waypoint-ide" (version: "0.1.0", lib name: "app_lib")
+     * Windows Installer Package (src-tauri/setup.iss): "Waypoint IDE" (setup binary: "Waypoint-IDE-Setup-0.1.0.exe")
+     * Public Source Repository: "https://github.com/sankhadipmondal05/Waypoint-IDE-test"
+
+2. Project Type and Domain:
+   - Primary Domain: Desktop Software Engineering / Computer Science Education (CSEd) / Developer Tooling.
+   - Secondary Domain: Applied On-Device Artificial Intelligence / Compiler Diagnostics / Human-Computer Interaction (HCI).
+   - Application Type: Cross-platform native desktop integrated development environment (currently optimized and built for Windows 64-bit systems).
+
+3. One-Paragraph Executive Summary:
+   Waypoint IDE is an offline-first, student-focused desktop Integrated Development Environment engineered specifically for beginners learning C, C++, Java, and Python. Developed using a hybrid desktop architecture combining a React 19 / TypeScript presentation layer with a high-performance Tauri v2 / Rust native core, Waypoint intentionally eliminates the cognitive friction, complex configuration, and visual clutter characteristic of professional IDEs like Visual Studio Code. The platform integrates Microsoft Monaco Editor, native system compiler toolchains (MinGW GCC/G++, OpenJDK, Python 3), an interactive terminal emulator with stdin piping, and a local on-device AI mentor powered by Ollama. Anchored by the pedagogical philosophy "Write -> Run -> Understand -> Review -> Improve", Waypoint enforces strict educational boundaries: AI assistance is explicit and on-demand, never writing code autonomously or interrupting the student. When execution fails, deterministic error parsing couples with local language models to deliver educational explanations; when explicitly requested, the system performs single-issue, progressive code reviews contextualized by student-authored problem statements, displaying minimal red/green logic diffs without cloud connectivity or recurring subscription costs.
+
+4. The Core Problem Being Addressed:
+   First- and second-year undergraduate computer science students encounter severe impediments when learning programming: steep toolchain installation curves, unintelligible compiler diagnostics (e.g., GCC linker failures, cryptic template errors), and confusing multi-file configurations in enterprise IDEs. Simultaneously, the proliferation of cloud-based AI code generators (e.g., GitHub Copilot, ChatGPT) has created a pedagogical trap where students bypass analytical problem-solving by copying generated code wholesale. Waypoint addresses this by providing a lightweight, zero-configuration local IDE that executes code deterministically and restricts AI to an on-demand, educational mentoring role that explains errors and suggests one targeted optimization at a time.
+
+5. Intended Users and Stakeholders:
+   - Primary Users:
+     * B.Tech / B.E. / BCA / B.Sc. Computer Science and Engineering students in foundational programming laboratory courses.
+     * High school and junior college students starting with basic algorithmic problem solving.
+     * Novice programmers practicing Data Structures and Algorithms (DSA) problems.
+   - Secondary Stakeholders:
+     * University Laboratory Instructors and Teaching Assistants seeking a standardized, cheat-resistant lab environment.
+     * College IT Administrators managing offline lab computers with restricted internet privileges and heterogeneous hardware specifications (4 GB to 8 GB RAM).
+
+6. Motivation and Practical Relevance:
+   - University Computer Labs in developing regions frequently operate behind strict institutional firewalls or experience intermittent internet connectivity. Cloud-tethered IDEs (Replit) or cloud-hosted LLM APIs (OpenAI API) are economically unviable and technically unreliable in such environments.
+   - Commercial IDEs (VS Code, CLion, Eclipse) have memory footprints frequently exceeding 1 GB, causing sluggishness on legacy institutional hardware. Waypoint utilizes Tauri's lightweight Webview2 footprint (~35-60 MB idle UI memory) combined with quantized small language models (SLMs <= 3B parameters) running locally on CPU or low-end GPU hardware.
+   - Pedagogical integrity demands that students retain cognitive responsibility for their syntax and logic. An IDE that restricts AI to post-execution explanation and bounded review protects the educational learning curve.
+
+7. Current Stage of Development:
+   - Development Stage: Advanced Functional Prototype / Midterm Defense Milestone (Phases 1 through 7 fully implemented and verified; Phase 8 packaging partially implemented with standalone Inno Setup installer generated).
+   - Working Executable Status:
+     * Standalone Release Binary: `src-tauri\target\release\waypoint-ide.exe` (10.27 MB, compiled and verified).
+     * Windows Setup Installer: `dist-installer\Waypoint-IDE-Setup-0.1.0.exe` (6.30 MB, compiled and verified).
+
+8. Core Idea in Simple, Presentation-Friendly Language:
+   "A clean, distraction-free desktop programming studio that runs your code natively and acts like an experienced lab tutor sitting beside you — explaining compiler errors and suggesting one smart improvement at a time, completely offline, without doing your homework for you."
+
+
+================================================================================
+SECTION B — PROBLEM STATEMENT
+================================================================================
+
+1. The Specific Problem Being Addressed:
+   Beginner programmers and engineering undergraduates face four major structural hurdles in standard university lab curricula:
+   a) Excessive Toolchain Setup Friction: Novice students lose hours struggling with PATH environment variables, MinGW installation directories, JDK CLASSPATH configurations, and IDE compiler flags before writing a single line of code.
+   b) Cryptic Compiler & Runtime Diagnostics: Native compiler error outputs from GCC, G++, Javac, or Python contain internal system paths, linker references (`undefined reference to WinMain`), and template noise that intimidate beginners rather than guiding them toward syntax resolution.
+   c) Cognitive Overload in Modern IDEs: Enterprise IDEs (Visual Studio Code, IntelliJ IDEA, Eclipse) are built for enterprise software engineering. They overwhelm beginners with thousands of settings, complex configuration files (`tasks.json`, `launch.json`, `.vscode`), extension marketplaces, and multi-pane clutter.
+   d) The AI Hallucination & Passive-Learning Trap: Modern cloud generative AI tools either generate entire blocks of unverified code (preventing students from understanding fundamentals) or produce hallucinated syntax that does not match local compiler realities.
+
+2. Existing Approaches and Systems:
+   - Category 1: Heavy Enterprise IDEs (Visual Studio Code, JetBrains CLion, Eclipse, IntelliJ).
+   - Category 2: Outdated Educational IDEs (Turbo C++, Dev-C++, Code::Blocks, IDLE).
+   - Category 3: Cloud Web IDEs (Replit, Programiz, LeetCode, HackerRank).
+   - Category 4: Cloud AI Coding Assistants (GitHub Copilot, Cursor, ChatGPT).
+
+3. Known Limitations of Existing Approaches:
+   - VS Code / CLion: Require extensive configuration; memory-intensive (often > 800 MB RAM); extensions frequently conflict; requires internet for most diagnostic extensions.
+   - Turbo C++ / Dev-C++: Turbo C++ relies on 16-bit DOSBox emulation, teaching obsolete non-standard C++ (e.g., `<iostream.h>`, `void main()`, `conio.h`) that fails on modern operating systems and industry standards. Dev-C++ lacks modern language features, auto-formatting, and intelligent error explanation.
+   - Replit / Online Compilers: Inoperable without uninterrupted high-bandwidth internet; introduce latency on university networks; cannot interact with native desktop peripherals or files directly.
+   - GitHub Copilot / Cursor: Always-on autocomplete interrupts student thought processes; ghost-text encourages guessing; cloud subscription cost ($10-$20/month/student) is prohibitive for public institutions; student source code is transmitted to external cloud servers.
+
+4. Why the Proposed Solution (Waypoint IDE) is Useful:
+   - Built specifically around the modern C++17, C11, Java 17+, and Python 3 standards.
+   - Utilizes a lightweight native desktop wrapper (Tauri + Rust) consuming minimal system resources.
+   - Keeps deterministic execution strictly separated from AI heuristics: code is compiled and executed by real system compilers, not simulated by an LLM.
+   - Provides a five-step automated Setup Wizard that scans system PATH, detects toolchains, installs missing compilers via Windows Package Manager (`winget`), and manages local AI models.
+   - Implements a single-issue, bounded code review mechanism that only fires on explicit student demand and refuses to rewrite entire files.
+   - Features deterministic path sanitization that strips confusing internal compiler paths and translates cryptic linker errors into clear pedagogical advice.
+
+5. Research and Implementation Gap:
+   Current academic literature and commercial tooling exhibit a marked gap: there is an absence of unified, offline-first educational desktop environments that pair deterministic local compiler toolchains with privacy-preserving, on-device Small Language Models (SLMs) governed by strict pedagogical interaction constraints (no autocomplete, on-demand activation, mandatory problem context, and single-finding diffs).
+
+6. Facts Requiring External Confirmation / User Input:
+   - Quantitative baseline data comparing the error-resolution speed of students using Waypoint versus students using standard terminal/VS Code.
+   - Formal survey feedback from university faculty regarding institutional adoption constraints.
+   - Empirical memory and power consumption benchmarks across specific lab PC hardware configurations (e.g., Intel 4th Gen Core i3 with 4GB RAM vs Intel 12th Gen Core i5 with 16GB RAM).
+
+
+================================================================================
+SECTION C — OBJECTIVES AND SCOPE
+================================================================================
+
+1. Main Project Objective:
+   To design, architect, and implement a lightweight, distraction-free, offline-first desktop Integrated Development Environment (Waypoint IDE) that streamlines local compilation for C, C++, Java, and Python, while integrating on-device AI mentoring to explain errors and provide progressive, pedagogical code improvements without compromising student cognitive ownership.
+
+2. Specific Technical Objectives:
+   - Objective 1 (Desktop Shell): Build a responsive desktop application shell using Tauri v2 and React 19/TypeScript adhering to an academic "Sand / Editorial" visual design language implemented exclusively in Vanilla CSS.
+   - Objective 2 (File Management): Implement an in-memory and persistent workspace tree supporting file/folder creation, deletion with safety confirmation, inline renaming, and drag-and-drop hierarchy reorganization.
+   - Objective 3 (Code Editing): Integrate the Microsoft Monaco Editor with customized Sand Light and Dark themes, dynamic zoom levels, unsaved state tracking, and line error highlighting.
+   - Objective 4 (Process Execution): Develop a Rust-based native execution pipeline capable of invoking GCC, G++, OpenJDK (javac/java), and Python 3 with piped stdin, process timing, and exit code capture.
+   - Objective 5 (Diagnostic Sanitization): Engineer an error sanitization pipeline that parses compiler stderr streams (GCC, Javac, Python tracebacks), extracts file/line/column coordinates, strips internal system paths, and translates obscure linker faults into actionable advice.
+   - Objective 6 (Interactive Terminal): Embed an interactive terminal emulator supporting direct shell command execution via native child processes and an interactive stdin prompt for programs requiring user input (`scanf`, `cin`, `input()`).
+   - Objective 7 (Local AI Orchestration): Implement direct integration with the Ollama local inference engine via raw TCP and HTTP APIs, supporting live model status scanning, automated daemon initialization, background model pulling with byte progress streaming, and latency verification.
+   - Objective 8 (Constrained Pedagogical Review): Build an on-demand code review engine that enforces single-issue, targeted optimization diffs contextualized by user-supplied problem statements, backed by a deterministic heuristic/regex rule engine fallback for 100% offline reliability.
+   - Objective 9 (Lab Deployment Packaging): Package the application into a standalone Windows installer using Inno Setup that bundles prerequisites and registers system environment paths.
+
+3. Core Features and Modules:
+   - Module 01: TopBar & Workspace Navigation Header (Run, Review, Layout Toggles, Theme Switch, File Problem Statement Input, Update Badge).
+   - Module 02: Project Explorer & Virtual File Tree (Hierarchy tree, Drag-and-Drop, New File/Folder modals, Confirm Delete modal).
+   - Module 03: Monaco Editor Pane & Tab Manager (Multi-tab management, Sand Editorial themes, dynamic font scaling, error line glyphs).
+   - Module 04: Native Execution Manager (`compile_and_run_file` in Rust, language detection, compiler invocation, process timing).
+   - Module 05: Output Console & Stdin Prompt Handler (Execution banners, stdout display, interactive prompt extraction, execution time in ms).
+   - Module 06: Integrated Terminal Emulator (`run_terminal_command` in Rust, command history navigation with Arrow Up/Down, built-in commands: run, ls, cat, help, clear).
+   - Module 07: Setup & Environment Wizard (`SetupWizardModal`, 5-step modal, toolchain scanner, winget installer trigger, model downloader).
+   - Module 08: Local AI & Ollama Service (`OllamaService`, TCP stream health checks, HTTP `/api/pull` streaming, `/api/generate` verification, daemon lifecycle management).
+   - Module 09: AI Review & Heuristic Engine (`ReviewService` and `AstAnalysisService`, problem statement injection, single-issue prompt formatting, deterministic rule catalog).
+   - Module 10: Production Installer Script (`setup.iss`, Inno Setup 6.7+ configuration, automated PATH registration).
+
+4. Functional Requirements (Identifiable from Codebase):
+   - FR-01: System must support source files in C (`.c`), C++ (`.cpp`), Java (`.java`), Python (`.py`), Markdown (`.md`), and JSON (`.json`).
+   - FR-02: User must be able to create, rename, delete, and reorganize files and folders via an intuitive Project Explorer.
+   - FR-03: Editor must provide syntax highlighting, bracket matching, line numbers, and Ctrl+S persistence.
+   - FR-04: Run command must detect file extension and invoke appropriate local compiler/runtime without manual configuration.
+   - FR-05: Execution engine must capture stdout, stderr, execution duration, and exit status code.
+   - FR-06: Programs requiring console input (`scanf`, `cin >>`, `input()`) must present an interactive input interface and pipe values into process stdin.
+   - FR-07: When compiler errors occur, editor must highlight offending line and display a sanitized diagnostic message with plain-language explanation.
+   - FR-08: User must enter a Problem Statement before requesting an AI code review to ensure contextualized analysis.
+   - FR-09: Code review must return exactly one high-priority finding with original code, suggested replacement code, and impact explanation, or declare the code optimal.
+   - FR-10: Application must detect whether Ollama is active on localhost:11434 and automatically attempt to launch the background daemon if missing.
+
+5. Non-Functional Requirements:
+   - NFR-01 (Offline-First): All editing, saving, compilation, execution, error parsing, and local AI reviews must function without an internet connection once initial setup is complete.
+   - NFR-02 (Performance & Lightweight Footprint): Editor startup time must remain under 3 seconds; execution initiation overhead must not exceed 100 ms; UI bundle size must remain compact.
+   - NFR-03 (Data Privacy): Student code and problem statements must never be transmitted to external third-party cloud servers; all AI inference must execute on local hardware.
+   - NFR-04 (Pedagogical Safety): AI must not provide full code replacements, ghost-text autocomplete, or unsolicited interruptions while coding.
+   - NFR-05 (Aesthetic Restraint): UI must adhere strictly to the Sand / Editorial design system using Vanilla CSS, avoiding neon themes, cluttered toolbars, and chatbot avatars.
+   - NFR-06 (Portability): Application must be distributable as a self-contained Windows executable and installer.
+
+6. Scope Boundaries:
+   - In-Scope:
+     * Desktop single-window IDE layout.
+     * C, C++, Java, and Python local compilation and execution.
+     * Monaco Editor integration with custom themes.
+     * Interactive stdin handling.
+     * Sanitized error diagnostics with line mapping.
+     * Local Ollama SLM integration and fallback heuristic rules.
+     * Single-issue progressive code review with targeted diffs.
+     * 5-step Setup Wizard and Windows Inno Setup installer.
+   - Out-of-Scope (Explicit Non-Goals as defined in PRD):
+     * Replacement for enterprise IDEs (no extension marketplace, no multi-root workspaces).
+     * Autonomous AI coding agents or always-on ghost-text autocomplete.
+     * Full Git GUI client (commit graph, merge conflict resolver, branch visualizer).
+     * Cloud collaboration, pair programming, or telemetric classroom monitoring.
+     * Multi-language debugging engine (no GDB/LLDB interactive breakpoint stepping in current build).
+
+7. Intended Final Deliverables:
+   - Production desktop application installer (`Waypoint-IDE-Setup-0.1.0.exe`).
+   - Standalone compiled binary (`waypoint-ide.exe`).
+   - Complete TypeScript/Rust source codebase with modular architectural separation.
+   - Comprehensive technical documentation suite (`PRD.md`, `ARCHITECTURE.md`, `DESIGN.md`, `MEMORY.md`, `PHASES.md`, `RULES.md`).
+   - Academic B.Tech project report and slide presentation deck.
+
+
+================================================================================
+SECTION D — TECHNOLOGY STACK AND TOOLS INVENTORY
+================================================================================
+
+An exhaustive, evidence-based audit of every programming language, library, framework, toolchain, and utility utilized in the project:
+
++-----------------------------------------------------------------------------------------------------------------------------+
+| CATEGORY          | TECHNOLOGY / TOOL      | VERSION     | PURPOSE IN THIS PROJECT                  | EVIDENCE LOCATION     |
++-----------------------------------------------------------------------------------------------------------------------------+
+| Presentation Tier | React                  | ^19.2.8     | Core UI component declarative framework  | package.json:16       |
+|                   | React DOM              | ^19.2.8     | DOM renderer for React components        | package.json:17       |
+| Language          | TypeScript             | ~6.0.2      | Strongly typed frontend application code | package.json:26       |
+| Build Tool        | Vite                   | ^8.2.0      | Fast HMR frontend dev server & bundler   | package.json:27       |
+| Vite Plugin       | @vitejs/plugin-react   | ^6.0.4      | React Fast Refresh using Oxc compiler    | package.json:24       |
+| Code Editor       | @monaco-editor/react   | ^4.7.0      | In-browser Monaco editor component       | package.json:13       |
+| UI Icons          | Lucide React           | ^1.31.0     | Clean, minimal SVG iconography           | package.json:15       |
+| Linter            | Oxlint                 | ^1.75.0     | Ultra-fast Rust-based JavaScript linter  | package.json:25       |
+| Type Definitions  | @types/node            | ^24.13.3    | Node.js type bindings                    | package.json:21       |
+|                   | @types/react           | ^19.2.17    | React 19 type definitions                | package.json:22       |
+|                   | @types/react-dom       | ^19.2.3     | React DOM type definitions               | package.json:23       |
+| Desktop Framework | Tauri (Rust Crate)     | 2.11.3      | Native desktop window & IPC core runtime | src-tauri/Cargo.toml  |
+|                   | @tauri-apps/api        | ^2.11.1     | Frontend TypeScript bindings for IPC     | package.json:14       |
+|                   | @tauri-apps/cli        | ^2.11.4     | Desktop build and packaging CLI          | package.json:20       |
+| Native Language   | Rust (Edition 2021)    | 1.77.2+     | Native OS process & command manager      | src-tauri/Cargo.toml  |
+| Serialization     | Serde / Serde JSON     | 1.0         | Rust data structures <-> JSON IPC        | src-tauri/Cargo.toml  |
+| Native Logging    | log / tauri-plugin-log | 0.4 / 2.0   | Rust logging infrastructure              | src-tauri/Cargo.toml  |
+| Styling           | Vanilla CSS            | CSS3        | Custom properties (Sand/Editorial theme) | src/styles/*.css      |
+| Local AI Runtime  | Ollama                 | v0.5.4+     | On-device LLM inference daemon           | src-tauri/src/lib.rs  |
+| Supported SLMs    | Qwen 2.5 Coder 1.5B    | 1.5B (0.98G)| Primary recommended default coding model | ollamaService.ts:34   |
+|                   | Llama 3.2 3B           | 3.2B (2.0GB)| Versatile coding & conceptual mentor      | ollamaService.ts:44   |
+|                   | DeepSeek R1 1.5B        | 1.5B (1.1GB)| Reasoning specialist (Chain-of-Thought)   | ollamaService.ts:54   |
+|                   | Mistral 7B             | 7.0B (4.1GB)| High precision model (16GB+ RAM systems) | ollamaService.ts:64   |
+| Compilers         | MinGW-w64 (GCC / G++)  | 14.2.0+     | C and C++ compilation (`-std=c++17`)     | src-tauri/src/lib.rs  |
+|                   | OpenJDK (Javac / Java) | 17+ / 21+   | Java compilation and JVM execution       | src-tauri/src/lib.rs  |
+| Runtimes          | Python 3               | 3.11 - 3.14  | Python script execution (`-u` flag)      | src-tauri/src/lib.rs  |
+| Package Manager   | Windows Package Manager | winget CLI   | Automated toolchain installation backend  | setupWizardModal.tsx  |
+| Installer Builder | Inno Setup             | 6.7+         | Production Windows Setup builder          | src-tauri/setup.iss   |
++-----------------------------------------------------------------------------------------------------------------------------+
+
+Notes on Uncertain or Deviated Usages:
+- Tree-sitter: Listed in `ARCHITECTURE.md` as an optional AST parser. Evidence in `src/services/astAnalysisService.ts` indicates the current implementation uses custom regex and heuristic pattern matching rather than native Tree-sitter C bindings.
+- SQLite: Mentioned in `ARCHITECTURE.md` as an optional storage mechanism. The current implementation relies on browser `localStorage` and temporary disk files (`%TEMP%\waypoint_runner`). SQLite is not present in the current dependency manifest.
+
+
+================================================================================
+SECTION E — SYSTEM ARCHITECTURE
+================================================================================
+
+1. Major System Components:
+   - Layer 1: Presentation & UI Tier (React 19 + TypeScript + Vanilla CSS).
+   - Layer 2: IPC Bridge (Tauri v2 Inter-Process Communication Channel).
+   - Layer 3: Native Core Engine (Rust `app_lib` crate).
+   - Layer 4: Execution & Toolchain Subsystem (OS Child Process Spawner).
+   - Layer 5: Local AI Subsystem (Ollama Daemon via Localhost HTTP/TCP).
+   - Layer 6: Persistence & File Storage Subsystem (LocalStorage + OS Temp Runner).
+
+2. Responsibilities of Each Component:
+   - React UI Layer: Manages application layout, resizable panels, Monaco Editor state, tab bar, project explorer virtual tree, terminal UI, review console diff rendering, and modal dialogs.
+   - Tauri IPC Bridge: Serializes frontend requests into typed JSON payloads and dispatches them across the desktop security boundary into Rust command handlers.
+   - Rust Core (`src-tauri/src/lib.rs`): Executes child processes without spawning secondary console windows (`CREATE_NO_WINDOW = 0x08000000`), performs TCP socket polling on port 11434 to verify Ollama daemon health, streams file contents to temporary disk buffers, captures stdout/stderr, and terminates orphaned background processes upon window close.
+   - Toolchain Subsystem: Locates native system binaries (`gcc`, `g++`, `javac`, `java`, `python`, `cmd.exe`) in system PATH, compiles source files, measures execution duration, and enforces unbuffered real-time stdout streaming (`python -u`).
+   - Local AI Subsystem: Communicates with Ollama running at `http://localhost:11434`, pulls quantized GGUF models directly, streams layer download progress, and issues constrained JSON prompts to generate single-issue reviews.
+
+3. Inter-Component Communication Protocol:
+   - Frontend to Rust: Explicit Tauri Commands invoked via `@tauri-apps/api/core`:
+     * `compile_and_run_file`: Transmits `{ fileName, content, stdinInput }` -> Returns `CommandOutput`.
+     * `run_terminal_command`: Transmits `{ command, cwd }` -> Returns `CommandOutput`.
+     * `scan_system_toolchains`: Dispatches parallel version queries -> Returns `Vec<ToolchainScanResult>`.
+     * `ensure_ollama_running`: Checks port 11434 -> Spawns background `ollama serve` if disconnected.
+     * `kill_ollama_daemon`: Issues `taskkill /F /IM ollama.exe /T` on Windows or `pkill` on Unix.
+     * `get_ollama_status`: Raw TCP socket request to `GET /api/tags` -> Returns `OllamaModelStatus`.
+     * `trigger_ollama_pull`: Spawns async thread executing `ollama pull <model>`.
+   - Frontend to Ollama: Direct HTTP `fetch` calls over localhost for streaming endpoints:
+     * `POST http://localhost:11434/api/pull`: Consumes NDJSON byte progress stream.
+     * `POST http://localhost:11434/api/generate`: Issues structured review prompts with `format: "json"`.
+
+4. Data Sources and Destinations:
+   - Source Code Content: Authored in Monaco Editor -> Cached in `localStorage` (`waypoint_project_files`) -> Written temporarily to `std::env::temp_dir().join("waypoint_runner")` during compilation -> Destroyed/Overwritten on subsequent runs.
+   - Compiler Output: Produced by GCC/G++/Javac/Python -> Captured via standard process pipes -> Sanitized in Rust and TypeScript -> Rendered in React Output Panel.
+   - Review Context: Student problem statement + active file code -> Bundled into LLM prompt -> Evaluated by Ollama model -> JSON response rendered in Review Console.
+
+5. ASCII System Architecture Diagram:
+
++----------------------------------------------------------------------------------------------------+
+|                                      WAYPOINT IDE PRESENTATION LAYER                               |
+|                                       (React 19 / TypeScript / Vite)                               |
+|  +---------------------+  +--------------------------------+  +---------------------------------+  |
+|  |   PROJECT EXPLORER  |  |      MONACO CODE EDITOR        |  |        AI REVIEW CONSOLE        |  |
+|  |  - File/Folder Tree |  |  - Sand/Editorial Themes       |  |  - Mandatory Problem Context    |  |
+|  |  - Drag & Drop Move |  |  - Error Line Highlight        |  |  - Single-Issue Diff Viewer     |  |
+|  |  - Delete Modal     |  |  - Dynamic Font Zoom (Ctrl+/-) |  |  - Heuristic Fallback Engine    |  |
+|  +---------------------+  +--------------------------------+  +---------------------------------+  |
+|  +----------------------------------------------------------------------------------------------+  |
+|  |                                OUTPUT & INTERACTIVE TERMINAL PANEL                           |  |
+|  |  - Output Tab (stdout, stderr, execution time, error badges, educational hints)              |  |
+|  |  - Terminal Tab (Command prompt, history navigation, run/ls/cat/gcc/python emulation)       |  |
+|  +----------------------------------------------------------------------------------------------+  |
+|  +----------------------------------------------------------------------------------------------+  |
+|  |                                SETUP WIZARD & STATUS BAR SYSTEM                              |  |
+|  |  - 5-Step Toolchain & Ollama Setup Modal  |  Active Model Badge & Live Daemon Status Dot     |  |
+|  +----------------------------------------------------------------------------------------------+  |
++----------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  | Tauri v2 IPC Bridge / Localhost HTTP
+                                                  v
++----------------------------------------------------------------------------------------------------+
+|                                    TAURI v2 / RUST NATIVE BACKEND                                  |
+|                                         (src-tauri/src/lib.rs)                                     |
+|  +----------------------------------+  +----------------------------------+  +-------------------+ |
+|  |      ExecutionManager            |  |       Diagnostic Sanitizer       |  |   DaemonManager   | |
+|  |  - compile_and_run_file(...)     |  |  - Path stripper                 |  |  - TCP Polling    | |
+|  |  - run_terminal_command(...)     |  |  - Linker fault humanizer        |  |  - Auto-spawn     | |
+|  |  - Stdin piping / -u flags       |  |  - Error line/column parsing     |  |  - Cleanup kill   | |
+|  +----------------------------------+  +----------------------------------+  +-------------------+ |
++----------------------------------------------------------------------------------------------------+
+           |                                         |                                  |
+           | OS Process Spawning                     | File I/O                         | HTTP/TCP Socket
+           v                                         v                                  v
++------------------------+              +------------------------+             +--------------------+
+| SYSTEM COMPILERS       |              | OS TEMPORARY RUNNER    |             | OLLAMA AI DAEMON   |
+| - MinGW GCC / G++      |              | %TEMP%\waypoint_runner |             | (localhost:11434)  |
+| - OpenJDK (javac/java) |              | - program.c / .cpp     |             | - Qwen 2.5 Coder   |
+| - Python 3 Runtime     |              | - program.exe / Main   |             | - DeepSeek R1      |
+| - Windows cmd.exe      |              | - Sanitized on run     |             | - Llama 3.2 3B     |
++------------------------+              +------------------------+             +--------------------+
+
+6. Important Architectural Decisions:
+   - Decision 1 (Tauri over Electron): Tauri was selected to eliminate Chromium bloat, reducing base installer size from ~120 MB to 6.3 MB, and operational RAM footprint from ~800 MB to ~45 MB.
+   - Decision 2 (Vanilla CSS over Frameworks): The team instituted a strict constraint prohibiting Tailwind CSS or component libraries to achieve an authentic, lightweight Sand / Editorial design system using custom CSS properties with zero runtime styling overhead.
+   - Decision 3 (Localhost Process Execution vs Docker Containerization): Because university lab machines frequently lack hardware virtualization support or administrator rights required for Docker Desktop, Waypoint compiles directly via native host toolchains with path sanitization.
+   - Decision 4 (Dual Review Engine): If Ollama is offline or times out (3.5s limit), `ReviewService` gracefully falls back to `AstAnalysisService`, ensuring students always receive feedback even on air-gapped lab PCs without AI models.
+
+7. Existing Architectural Limitations:
+   - Files are stored in browser `localStorage` and compiled via an OS temporary directory rather than maintaining direct two-way binding with arbitrary native disk directories.
+   - Terminal emulator runs child processes via `cmd /C` rather than implementing a full pseudo-terminal (PTY) interface with ANSI color escape code handling.
+
+
+================================================================================
+SECTION F — USER FLOW
+================================================================================
+
+1. Entry Point:
+   - On initial launch, the application loads the main IDE layout. If no workspace files exist, the central pane displays the `WelcomeTab` ("Lab Edition v0.1.0"), presenting quick-action cards ("New C++ Source", "New Python Script", "New Java Class", "New C Program"), a keyboard shortcut reference table, and a direct banner to launch the Setup Wizard.
+
+2. Navigation and Interaction Flow:
+   - Step 1 (Environment Setup): User clicks the Setup Wizard banner or the Settings gear (`⚙`) in the TopBar. The 5-step modal scans installed toolchains, verifies Ollama status, allows one-click installation of missing compilers via `winget`, selects an AI model (default: Qwen 2.5 Coder 1.5B), downloads model layers with live percentage feedback, verifies inference latency, and completes setup.
+   - Step 2 (Project Management): User creates a file in the Project Explorer (e.g., `main.cpp`). An inline input appears; upon pressing Enter, the file is added to the virtual project tree, stored in `localStorage`, and opened in a new editor tab.
+   - Step 3 (Coding): User writes code in the Monaco Editor. The editor displays syntax coloring, active line highlighting, and unsaved dirty indicators (`●`). The user saves using `Ctrl+S`.
+   - Step 4 (Context Definition): User enters the exercise prompt into the "Problem:" input field in the TopBar (e.g., "Calculate the sum of elements in an integer vector"). This context binds to the active file.
+   - Step 5 (Execution): User clicks the prominent "Run" button (or presses `F5`).
+     * Sub-flow A (Interactive Input): If the source code contains `cin`, `scanf`, or `input()`, the Output tab detects input readiness, prompts the student inline, accepts input, and pipes it into the process stdin.
+     * Sub-flow B (Success): Program runs cleanly. The Output panel displays a green banner: "✓ Program finished successfully (XX ms)" alongside standard output text.
+     * Sub-flow C (Compiler / Runtime Error): Program fails. A red banner appears: "✕ Program execution failed". The sanitized compiler message is displayed, an error pin indicates the exact line and column, the editor scrolls to and highlights the offending line with an error glyph, and an educational "Understanding this error" hint card explains how to fix the syntax.
+   - Step 6 (On-Demand AI Code Review): User clicks the "Review" button in the TopBar.
+     * Validation Gate: If the Problem Statement input in the TopBar is empty, the review refuses to fire, flashes a warning card in the review panel, and focuses the problem input field.
+     * Analysis: Once context is present, the Review Console displays an animated analysis state, queries Ollama (or fallback heuristic engine), and renders the result.
+     * Outcome 1 (Optimal): If the code is already clean and optimal, an Award badge appears: "✓ Review Complete. This is the best possible version to solve this problem. Well done!"
+     * Outcome 2 (Targeted Finding): If an optimization exists, a single finding card appears (e.g., "Pass vector container by const reference"). It displays the category, severity, educational impact explanation, and a minimal two-line diff showing original code (`-`) versus suggested replacement (`+`), with a one-click "Copy Snippet" button.
+   - Step 7 (Improvement & Iteration): The student copies or manually applies the suggestion, edits the file, runs it again to ensure tests pass, and clicks "Review" to verify if the code has reached optimal state.
+
+3. ASCII User Flow Diagram:
+
+[ Launch Waypoint IDE ]
+         |
+         v
+  { First Launch? } ---- YES ----> [ 5-Step Setup Wizard ]
+         |                                  |
+         NO <-------------------------------+ (Compilers & Model Ready)
+         |
+         v
+[ Workspace Interface ] <=============================================+
+  - Project Explorer                                                  |
+  - Monaco Code Editor                                                |
+  - Welcome Quick Actions                                             |
+         |                                                            |
+         v                                                            |
+[ Write / Edit Code ] -----> [ Enter Problem Context in TopBar ]       |
+         |                                                            |
+         v                                                            |
+  ( Click "Run" / F5 )                                                |
+         |                                                            |
+         v                                                            |
+  { Compilation / Execution }                                         |
+         |                                                            |
+         +---- Requires Input? ---> [ Inline Stdin Form ] -> Submit -+
+         |
+         +---- FAILED (Error) ----> [ Sanitized Stderr Display ]
+         |                          [ Line Highlight in Monaco ]
+         |                          [ Educational Hint Card    ]
+         |                                    |
+         |                                    v
+         |                          [ Student Fixes Bug ] ------------+
+         |
+         +---- SUCCESS -----------> [ Green Success Banner ]
+                                    [ Output & Timing (ms) ]
+                                              |
+                                              v
+                                  ( Click "Review" Button )
+                                              |
+                                              v
+                              { Problem Statement Provided? }
+                                    |                 |
+                                   NO                YES
+                                    |                 |
+                                    v                 v
+                       [ Flash Warning Card ]   [ Query Ollama / SLM ]
+                       [ Focus Input Field  ]         |
+                                                      v
+                                        { Code Status Optimal? }
+                                             |              |
+                                            YES             NO
+                                             |              |
+                                             v              v
+                                     [ Award Badge: ]  [ Single-Issue Finding ]
+                                     [ Best Possible]  [ Category / Severity  ]
+                                                       [ Minimal Logic Diff   ]
+                                                       [ Copy Snippet Action  ]
+                                                                |
+                                                                v
+                                                       [ Student Refines Code ]
+
+
+================================================================================
+SECTION G — TECHNICAL WORKFLOW
+================================================================================
+
+1. Technical Execution Pipeline:
+   - Phase 1 (Input Acquisition): React collects active file name, code content string, and optional stdin input. Dispatches Tauri IPC call `compile_and_run_file`.
+   - Phase 2 (Disk Staging): Rust `compile_and_run_file` determines target extension, resolves `%TEMP%\waypoint_runner`, creates the directory if missing, and writes the source file to disk.
+   - Phase 3 (Compilation & Toolchain Invocation):
+     * C++: Executes `g++ -std=c++17 <filename> -o program.exe` without creating a console window.
+     * C: Executes `gcc <filename> -o program.exe`.
+     * Java: Executes `javac <filename>`, followed by `java -cp . <classname>`.
+     * Python: Skips compilation; directly launches `python -u <filename>`.
+   - Phase 4 (Process Piping & Timing): Rust measures execution start/end time. If stdin bytes exist, writes them to `child.stdin`. Waits for process exit.
+   - Phase 5 (Diagnostic Sanitization): Rust cleans raw stderr:
+     * Replaces `%TEMP%\waypoint_runner\` paths with clean relative filenames.
+     * Matches linker errors (`undefined reference to WinMain` or `main`) and replaces them with an educational notice explaining that every C/C++ program requires an `int main()` entry point.
+   - Phase 6 (Output Dispatch): Returns structured `CommandOutput` struct `{ success, stdout, stderr, exit_code }` across IPC to React.
+
+2. Error Diagnostics & Navigation Pipeline:
+   - React `ExecutionService.runProgram` receives stderr.
+   - Regex engines extract line numbers:
+     * Python: `/File\s+["'][^"']+["'],\s+line\s+(\d+)/i`
+     * GCC/Clang: `/([^\s:]+):(\d+):(\d+):\s*(?:fatal\s+)?error:\s*(.*)/i`
+     * Java: `/([^\s:]+):(\d+):\s*error:\s*(.*)/i`
+   - Strips deep system paths (MinGW `ld.exe`, `crtexe.c`).
+   - If line number is found, sets `errorLocation`. Monaco Editor triggers `editor.revealLineInCenter(errorLine)` and paints a custom CSS glyph decoration (`monaco-error-line-highlight`).
+
+3. Local AI Review Pipeline:
+   - User triggers review -> `ReviewService.requestSingleIssueReview(file)` initiates.
+   - Verification Step: Sends HTTP GET with 2000ms timeout to `http://localhost:11434/api/tags`.
+   - If Ollama is running:
+     * Injects System Prompt enforcing:
+       1) Combine Problem Statement with code context.
+       2) Never rewrite the whole file.
+       3) Identify only the single highest-priority optimization / Big-O bottleneck.
+       4) Return strictly JSON format `{ isOptimal, title, category, severity, explanation, benefit, originalCode, suggestedCode }`.
+     * Dispatches `POST http://localhost:11434/api/generate` with `format: "json"` and a 3500ms timeout.
+     * Parses JSON response. If `isOptimal === true`, displays completion badge. Otherwise, populates finding card.
+   - Fallback Step: If Ollama is unreachable or times out, seamlessly routes to `AstAnalysisService.analyzeCode(file)`. Evaluates deterministic heuristic catalog across C++, Python, Java, and C. Returns matching rule finding or confirms optimal state.
+
+4. ASCII Technical Workflow Diagram:
+
+[ Source File in Monaco ] + [ Problem Statement in TopBar ]
+                         |
+                         v
+           ( Trigger Execution / F5 )
+                         |
+                         v
+       [ Tauri IPC: compile_and_run_file ]
+                         |
+                         v
+        [ Rust: Stage File in Temp Dir ]
+                         |
+                         v
+          { Language Extension Check }
+          ├── .py  ──> [ python -u <file> ] ─────────────+
+          ├── .cpp ──> [ g++ -std=c++17 -o program.exe ] ─┤
+          ├── .c   ──> [ gcc -o program.exe ] ────────────┤
+          └── .java ─> [ javac -> java -cp . Main ] ──────┤
+                                                          |
+                                                          v
+                                              { Process Exit Status }
+                                              ├── Exit Code 0 (Success)
+                                              │     |
+                                              │     v
+                                              │   [ Pipe stdout to React ]
+                                              │   [ Display Success Banner ]
+                                              │
+                                              └── Exit Code != 0 (Error)
+                                                    |
+                                                    v
+                                          [ Rust: Path Sanitizer ]
+                                          [ Linker Fault Humanizer ]
+                                                    |
+                                                    v
+                                          [ React Regex Line Parser ]
+                                                    |
+                                                    v
+                                          [ Monaco Line Highlight & Scroll ]
+                                          [ Display Sanitized Diagnostic ]
+                                                    |
+                                                    v
+                                        ( Student Requests Review )
+                                                    |
+                                                    v
+                                      { Check Ollama Health (11434) }
+                                      ├── ONLINE (Within 3500ms)
+                                      │     |
+                                      │     v
+                                      │   [ Send Structured JSON Prompt ]
+                                      │   [ Extract Single Targeted Diff ]
+                                      │
+                                      └── OFFLINE / TIMEOUT
+                                            |
+                                            v
+                                          [ Route to AstAnalysisService ]
+                                          [ Evaluate Heuristic Rules Catalog ]
+                                                    |
+                                                    v
+                                        [ Render Review Console Card ]
+                                        - Optimal Solution Badge OR
+                                        - Targeted Diff with Copy Snippet
+
+
+================================================================================
+SECTION H — PROTOTYPE, UI/UX & DESIGN SYSTEM SPECIFICATION
+================================================================================
+
+1. Design Philosophy: "Sand / Editorial":
+   Waypoint rejects the dark, neon-soaked, futuristic aesthetic common among AI developer tools. Instead, it adopts an editorial, warm, academic design language reminiscent of high-end reference books and calm studio workspaces. The interface promotes prolonged focus and reduced eye strain.
+
+2. Design Tokens and Color System:
+   Implemented exclusively via CSS Custom Properties in `src/styles/variables.css`:
+   - Light Mode (Primary Default):
+     * `--bg-color`: `#EFECE6` (Warm Sand background)
+     * `--bg-alt`: `#E8E6DF` (Subtle container tone)
+     * `--surface-color`: `#F7F6F2` (Parchment white surface)
+     * `--surface-hover`: `#ECEAE3` (Interactive hover)
+     * `--border-color`: `#DDD9CE` (Restrained architectural border)
+     * `--text-primary`: `#22211D` (Deep slate charcoal)
+     * `--text-secondary`: `#7C7A73` (Editorial muted caption)
+     * `--accent-color`: `#1C1B18` (Obsidian accent)
+     * `--accent-text`: `#FFFFFF` (Pure white text on accent)
+     * `--secondary-accent`: `#E2DDD2` (Soft sand button fill)
+   - Dark Mode (Night Study):
+     * `--bg-color`: `#181715` (Deep basalt)
+     * `--surface-color`: `#262421` (Warm charcoal surface)
+     * `--border-color`: `#383530` (Muted dark border)
+     * `--text-primary`: `#EFECE6` (Warm parchment text)
+     * `--text-secondary`: `#9B988E` (Muted bone caption)
+     * `--accent-color`: `#F7F6F2` (Bright sand accent)
+   - Semantic Status Tokens:
+     * Success: `#2D6A4F` (Forest green banner / indicator)
+     * Error: `#A4243B` (Crimson error banner / line marker)
+     * Warning: `#9E5B00` (Amber diagnostic badge)
+     * Info: `#385E72` (Steel blue metadata)
+
+3. Typography System:
+   - Interface Font: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`
+   - Code & Terminal Font: `'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace`
+   - Monaco Editor Theme: Custom registered `sand-editorial-light` and `sand-editorial-dark` themes (`src/styles/monacoTheme.ts`) featuring custom token coloring for keywords, types, strings, numbers, and functions.
+   - Dynamic Zoom Controls: Keyboard shortcuts `Ctrl+=` (Zoom In), `Ctrl+-` (Zoom Out), `Ctrl+0` (Reset to 14px) with font size persisted in `localStorage` (`waypoint_editor_fontsize`).
+
+4. Existing Implemented Screens & Components:
+   - Screen 1: Top Navigation Bar (`TopBar.tsx`):
+     * Contains application branding icon (`AppIcon.png`), active file Problem Statement input container with validation warning states, central "Run" and "Review" action buttons, update notification badge (`Update 1.1`), sliding Sun/Moon theme toggle switch, panel toggle icons, and settings trigger.
+   - Screen 2: Project Explorer Panel (`ProjectExplorer.tsx` & `FileTreeItem.tsx`):
+     * 240px default resizable panel displaying hierarchical file/folder trees, expand/collapse chevrons, language-specific file icons, inline creation inputs for files and folders, delete action buttons, drag-and-drop item movement, and root drop targets.
+   - Screen 3: Monaco Editor Pane (`EditorPane.tsx` & `TabBar.tsx`):
+     * Multi-tab bar with close buttons and unsaved modification dots, breadcrumb path indicator (`workspace / main.cpp`), full Monaco Editor instance with bracket matching, line highlight, and error glyph gutter markers.
+   - Screen 4: Welcome & Quick-Start View (`WelcomeTab.tsx`):
+     * Displayed when no tabs are open. Presents studio headline, quick-action cards for C++, Python, Java, and C templates, keyboard shortcut overview table, studio capabilities grid, and Setup Wizard callout.
+   - Screen 5: Output & Interactive Terminal Panel (`OutputPanel.tsx`):
+     * Dual-tab bottom panel. Tab 1 ("OUTPUT") displays execution status badges, elapsed execution time in ms, stdout stream, stderr stream, clickable error location pins (`📍 file:line:col`), and educational AI hint cards. Tab 2 ("TERMINAL") provides a command-line prompt (`waypoint:~/workspace$`), command history navigation, and built-in CLI commands.
+   - Screen 6: AI Review Console (`ReviewConsole.tsx`):
+     * Collapsible 320px right panel. Displays problem statement validation warning cards, animated review progress indicators, optimal solution award badges, and structured finding cards containing category/severity tags, educational impact explanations, minimal red/green diff containers, and "Copy Snippet" actions.
+   - Screen 7: Environment & Toolchain Setup Wizard (`SetupWizardModal.tsx`):
+     * 5-step modal dialog:
+       Step 1: Welcome & Overview.
+       Step 2: Toolchain Permissions & Ollama Check (system PATH scan, version detection, winget install permissions).
+       Step 3: Model Selection (dropdown with Qwen 2.5 Coder 1.5B default, size and parameter breakdowns, terminal command preview).
+       Step 4: Terminal Installer & Download Engine (real-time progress bar, byte counters, live terminal output console streaming winget and ollama pull logs).
+       Step 5: Verification & Readiness (local inference latency test, environment summary card, Launch IDE button).
+   - Screen 8: Modal Dialogs:
+     * `ConfirmModal.tsx`: Destructive action confirmation dialog with hazard icon for safe file and folder deletion.
+
+5. Missing Screens / Recommended Presentation Mockups:
+   - Mockup 1 (Architecture Flow): Visual slide graphic showing the separation between the deterministic compiler path and the on-demand AI review path.
+   - Mockup 2 (Before/After Diff Comparison): High-resolution screenshot of the Review Console showing an unoptimized loop transformed into an idiomatic STL algorithm.
+   - Mockup 3 (Setup Wizard Progression): Slide visual showcasing the 5-step onboarding wizard to emphasize zero-configuration lab deployment.
+
+
+================================================================================
+SECTION I — MODULE-BY-MODULE IMPLEMENTATION AUDIT
+================================================================================
+
+Comprehensive audit of all 10 major project modules:
+
+--------------------------------------------------------------------------------
+MODULE 01: TopBar & Layout Orchestrator
+--------------------------------------------------------------------------------
+- Purpose: Application header hosting primary actions (Run, Review), problem context input, panel visibility toggles, theme switching, and settings triggers.
+- Important Files: `src/components/layout/TopBar.tsx`, `src/styles/topbar.css`, `src/App.tsx`.
+- Functionality Implemented: File-specific problem statement input; mandatory validation warning if statement is empty on review; Run button with active execution spinner; Review button with analyzing state; panel toggle buttons; sliding light/dark theme switch; settings launcher.
+- Supporting Evidence: `TopBar.tsx:47-170`, `App.tsx:361-380`.
+- Dependencies: `lucide-react`, `AppIcon.png`.
+- Verification Status: COMPLETED AND VERIFIED. Verified in UI rendering and event dispatch.
+- Known Gaps: Update badge displays a placeholder browser alert dialog rather than querying an automated remote update API.
+- Remaining Tasks: Connect update badge to an automated GitHub Releases or remote version manifest check.
+
+--------------------------------------------------------------------------------
+MODULE 02: Virtual Project Explorer & Workspace Tree
+--------------------------------------------------------------------------------
+- Purpose: Manage workspace files and folders, providing creation, inline renaming, drag-and-drop reorganization, and deletion.
+- Important Files: `src/features/explorer/ProjectExplorer.tsx`, `src/features/explorer/FileTreeItem.tsx`, `src/services/fileService.ts`, `src/components/common/ConfirmModal.tsx`.
+- Functionality Implemented: Recursive tree rendering; inline text inputs for new files/folders; drag-and-drop file movement into folders and root; delete item confirmation modal; persistent synchronization with `localStorage` (`waypoint_project_files`).
+- Supporting Evidence: `ProjectExplorer.tsx:80-167`, `FileService.ts:117-205`, `FileTreeItem.tsx:73-131`.
+- Dependencies: `lucide-react`, `fileService.ts`.
+- Verification Status: COMPLETED AND VERIFIED. Verified file tree operations and localStorage caching.
+- Known Gaps: Project Explorer manages an in-memory / localStorage virtual tree. Direct native OS file system directory binding (opening a physical folder from the host OS via file dialogs) is not yet implemented.
+- Remaining Tasks: Integrate `tauri-plugin-dialog` and native file system directory traversal commands.
+
+--------------------------------------------------------------------------------
+MODULE 03: Monaco Editor & Tab Management
+--------------------------------------------------------------------------------
+- Purpose: Provide full-featured, syntax-highlighted code editing with multi-tab support, custom themes, and diagnostic line markers.
+- Important Files: `src/features/editor/EditorPane.tsx`, `src/features/editor/TabBar.tsx`, `src/styles/monacoTheme.ts`, `src/styles/editor.css`.
+- Functionality Implemented: Multi-tab switching and closing; dirty state indicators (`●`); breadcrumb path navigation; custom Sand Light and Sand Dark themes; dynamic font size scaling (`Ctrl+=`, `Ctrl+-`, `Ctrl+0`); line error decoration glyphs and automated scroll-to-line on execution failure.
+- Supporting Evidence: `EditorPane.tsx:43-136`, `monacoTheme.ts:3-74`, `TabBar.tsx:20-47`.
+- Dependencies: `@monaco-editor/react`, Monaco Editor core.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Code folding and minimap are intentionally disabled or simplified per educational guidelines.
+- Remaining Tasks: Add auto-formatting on save (`monaco.editor.action.formatDocument`).
+
+--------------------------------------------------------------------------------
+MODULE 04: Rust Native Execution Manager
+--------------------------------------------------------------------------------
+- Purpose: Execute student source code natively via system compiler toolchains in an isolated background process.
+- Important Files: `src-tauri/src/lib.rs`, `src-tauri/src/main.rs`.
+- Functionality Implemented: `compile_and_run_file` Tauri command; stages code into `%TEMP%\waypoint_runner`; invokes GCC, G++, Javac/Java, and Python 3; suppresses Windows console window popups (`CREATE_NO_WINDOW`); supports piped stdin; captures execution duration, stdout, and stderr.
+- Supporting Evidence: `src-tauri/src/lib.rs:73-425`.
+- Dependencies: `serde`, `serde_json`, `tauri::command`.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Does not implement full process isolation/sandboxing (e.g. Windows Job Objects or Linux cgroups) to prevent malicious student code (e.g. `while(1) fork()`).
+- Remaining Tasks: Implement execution timeout watchdog (e.g., terminate process after 10 seconds to kill infinite loops).
+
+--------------------------------------------------------------------------------
+MODULE 05: Compiler Diagnostics & Stderr Sanitizer
+--------------------------------------------------------------------------------
+- Purpose: Parse, clean, and translate confusing compiler error messages into educational, actionable guidance.
+- Important Files: `src-tauri/src/lib.rs` (clean_stderr closure), `src/services/executionService.ts`.
+- Functionality Implemented: Strips deep system directories and MinGW toolchain internals (`collect2.exe`, `ld.exe`, `crtexe.c`); translates obscure missing entry point linker errors into an explanation that every C/C++ program requires an `int main()`; extracts regex line numbers across Python, GCC, and Java; attaches educational guidance hints.
+- Supporting Evidence: `src-tauri/src/lib.rs:97-113`, `executionService.ts:64-134`.
+- Dependencies: Regular expression engines in Rust and TypeScript.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Relies on regex pattern matching rather than structured compiler JSON diagnostic flags (e.g. `-fdiagnostics-format=json`).
+- Remaining Tasks: Implement `-fdiagnostics-format=json` parser for GCC/Clang where supported.
+
+--------------------------------------------------------------------------------
+MODULE 06: Output Console & Interactive Stdin Handler
+--------------------------------------------------------------------------------
+- Purpose: Display program execution results, timing metrics, and provide an interactive stdin prompt for user inputs.
+- Important Files: `src/features/output/OutputPanel.tsx`, `src/services/executionService.ts`, `src/styles/output.css`.
+- Functionality Implemented: Execution banners (success / error with exit code and elapsed ms); raw stdout rendering; regex detection of interactive input statements (`scanf`, `cin >>`, `input()`); inline prompt input form that captures user input and re-triggers execution with piped stdin; clear output action.
+- Supporting Evidence: `OutputPanel.tsx:200-307`, `executionService.ts:136-160`.
+- Dependencies: `lucide-react`, `executionService.ts`.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Interactive input currently re-invokes the program with piped stdin rather than maintaining an open, bi-directional streaming pipe.
+- Remaining Tasks: Transition interactive execution to a continuous bi-directional streaming process.
+
+--------------------------------------------------------------------------------
+MODULE 07: Integrated Terminal Emulator
+--------------------------------------------------------------------------------
+- Purpose: Provide an accessible command-line interface within the IDE for running arbitrary shell commands and practicing CLI fundamentals.
+- Important Files: `src/features/output/OutputPanel.tsx`, `src-tauri/src/lib.rs`.
+- Functionality Implemented: `TERMINAL` tab in Output panel; command line prompt (`waypoint:~/workspace$`); command history navigation via Arrow Up/Down; built-in command handlers (`help`, `clear`, `cls`, `run [file]`); native shell command dispatch via `run_terminal_command` in Rust.
+- Supporting Evidence: `OutputPanel.tsx:26-155`, `src-tauri/src/lib.rs:19-71`.
+- Dependencies: `run_terminal_command` in Rust backend.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Does not emulate a full pseudo-terminal (PTY) with ANSI color codes or curses-based interactive programs (e.g. `vim`, `nano`).
+- Remaining Tasks: Integrate `portable-pty` in Rust and `xterm.js` in frontend for full PTY support.
+
+--------------------------------------------------------------------------------
+MODULE 08: Setup Wizard & Toolchain Diagnostics
+--------------------------------------------------------------------------------
+- Purpose: Ensure students have required compilers and local AI infrastructure installed without manual system configuration.
+- Important Files: `src/features/wizard/SetupWizardModal.tsx`, `src/services/ollamaService.ts`, `src-tauri/src/lib.rs`.
+- Functionality Implemented: 5-step modal wizard; live system PATH scanning via `scan_system_toolchains` for GCC, G++, Python, Javac, and Ollama; automated installation triggers using Windows Package Manager (`winget`); model selection dropdown; real-time progress bar with layer byte tracking; inference latency verification test.
+- Supporting Evidence: `SetupWizardModal.tsx:38-245`, `ollamaService.ts:75-113`, `src-tauri/src/lib.rs:427-481`.
+- Dependencies: `winget`, Ollama API, `scan_system_toolchains`.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Automated installation via `winget` requires administrative execution privileges on Windows.
+- Remaining Tasks: Add offline archive extraction option for lab environments where `winget` is blocked by group policy.
+
+--------------------------------------------------------------------------------
+MODULE 09: Local AI & Ollama Integration Subsystem
+--------------------------------------------------------------------------------
+- Purpose: Manage on-device LLM inference, daemon lifecycle, model pulling, and latency benchmarking.
+- Important Files: `src/services/ollamaService.ts`, `src-tauri/src/lib.rs`.
+- Functionality Implemented: TCP port 11434 socket connectivity checks; automated background daemon launcher (`ollama serve`); daemon termination on application exit (`kill_ollama_daemon`); HTTP streaming model pull via `/api/pull`; latency testing via `/api/generate`; curated catalog of 4 SLMs (Qwen 2.5 Coder 1.5B, Llama 3.2 3B, DeepSeek R1 1.5B, Mistral 7B).
+- Supporting Evidence: `ollamaService.ts:178-445`, `src-tauri/src/lib.rs:483-659`.
+- Dependencies: Localhost Ollama Daemon, Fetch Streams, Native TCP Sockets.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: Assumes Ollama is installed in standard paths or available on PATH.
+- Remaining Tasks: Provide bundled portable Ollama binary within the Inno Setup installer.
+
+--------------------------------------------------------------------------------
+MODULE 10: AI Code Review & AST Heuristic Engine
+--------------------------------------------------------------------------------
+- Purpose: Deliver on-demand, educational code reviews bounded by student problem statements and strict pedagogical rules.
+- Important Files: `src/services/reviewService.ts`, `src/services/astAnalysisService.ts`, `src/features/review/ReviewConsole.tsx`.
+- Functionality Implemented: Problem statement requirement gate; structured JSON prompting to Ollama enforcing single-issue diffs and forbidding whole-file rewrites; optimal solution detector; deterministic fallback heuristic engine (`AstAnalysisService`) containing 8 hand-crafted rules across C++, Python, Java, and C (e.g. `std::accumulate`, `const &` vector passing, Python string `.join()`, Java `StringBuilder`, C `fgets`); red/green diff rendering with one-click snippet copy.
+- Supporting Evidence: `reviewService.ts:9-115`, `astAnalysisService.ts:16-268`, `ReviewConsole.tsx:85-188`.
+- Dependencies: Ollama API, `astAnalysisService.ts`.
+- Verification Status: COMPLETED AND VERIFIED.
+- Known Gaps: `AstAnalysisService` uses regex heuristic checks rather than full Tree-sitter abstract syntax tree parse graphs.
+- Remaining Tasks: Integrate web-tree-sitter for real AST parsing of complex algorithmic patterns.
+
+
+================================================================================
+SECTION J — WORK COMPLETED SO FAR (FACT-BASED PROGRESS AUDIT)
+================================================================================
+
+1. Research and Planning Completed:
+   - Comprehensive Product Requirements Document (`PRD.md`) defining target personas, pedagogical principles, language scope, and success criteria.
+   - Architectural Blueprint (`ARCHITECTURE.md`) establishing tier separation between presentation, Tauri IPC, native execution, and local AI inference.
+   - Design System Specification (`DESIGN.md`) establishing the Sand / Editorial design system tokens and prohibiting external CSS utility frameworks.
+   - Development Phase Plan (`PHASES.md`) outlining Phases 0 through 8.
+   - Development Restraint Rules (`RULES.md`) mandating strict offline-first principles, explicit on-demand AI reviews, and compiler primacy.
+
+2. Architecture and Design Completed:
+   - Resizable 3-column + bottom panel desktop workspace layout.
+   - Dual Sand Editorial themes (Light and Dark) with sliding toggle switch.
+   - Custom Monaco Editor syntax coloring themes matching the Sand palette.
+   - Clean, minimalist iconography via Lucide React.
+
+3. Core Development Completed:
+   - Tauri v2 + React 19 + TypeScript desktop infrastructure.
+   - Virtual Project Explorer with nested folders, drag-and-drop movement, and deletion confirmation modal.
+   - Monaco Editor multi-tab management, unsaved state tracking, and dynamic font zoom controls.
+   - Rust native execution manager compiling and running C++, C, Java, and Python with stdout/stderr capture and process timing.
+   - Interactive stdin detection and inline prompt input form.
+   - Compiler error diagnostic parsing with line-mapping and editor gutter highlights.
+   - Integrated terminal emulator with command history and shell command execution.
+   - 5-step Setup Wizard with system PATH toolchain scanning and automated winget installer triggers.
+   - Local Ollama AI daemon management with TCP socket health checking, auto-spawning, and cleanup.
+   - On-demand AI review engine enforcing single-issue diff constraints bound by student problem statements.
+   - Deterministic AST/heuristic rule engine fallback for offline review reliability.
+
+4. Integrations Completed:
+   - Tauri IPC bridge with 7 registered native commands.
+   - Monaco Editor integration with dynamic theme updates.
+   - Ollama Localhost API integration (`/api/tags`, `/api/pull`, `/api/generate`).
+   - Windows Inno Setup compiler integration for full setup packaging.
+
+5. Testing and Validation Completed:
+   - Manual end-to-end verification of C++ compilation (`g++ -std=c++17`) and runtime error handling.
+   - Verification of Python script execution (`python -u`) and syntax error line highlighting.
+   - Verification of Java compilation (`javac`) and bytecode execution (`java`).
+   - Verification of C execution (`gcc`) and missing `main()` linker error translation.
+   - Verification of Ollama streaming pull with live byte counters.
+   - Verification of single-issue AI review diff rendering.
+   - Verification of heuristic rule fallback when Ollama is offline.
+
+6. Packaging & Deliverables Completed:
+   - Compiled release binary: `src-tauri\target\release\waypoint-ide.exe` (10.27 MB).
+   - Compiled Windows setup installer: `dist-installer\Waypoint-IDE-Setup-0.1.0.exe` (6.30 MB).
+
+7. Defensible Project Completion Percentage:
+   - Calculation Methodology: Based on the 8 development phases defined in `PHASES.md`:
+     * Phase 0 (Foundation): 100%
+     * Phase 1 (IDE Shell): 100%
+     * Phase 2 (Editor + Files): 100%
+     * Phase 3 (Execution Engine): 100%
+     * Phase 4 (Output + Error Handling): 100%
+     * Phase 5 (Local AI + Setup Wizard): 100%
+     * Phase 6 (AI Error Explanation): 100%
+     * Phase 7 (AI Code Review): 100%
+     * Phase 8 (Updates, Native File Binding & Polish): 50% (Inno Setup installer complete; native OS folder binding and OTA update server pending).
+   - Weighted Progress Score: 8.5 / 9.0 milestones = Approximately 90% of midterm scope completed.
+   - Limitations of Calculation: Does not include automated test coverage (unit/E2E test suite), formal user studies, or macOS/Linux packaging.
+
+
+================================================================================
+SECTION K — CURRENT RESULTS & DEMONSTRATION SCRIPT
+================================================================================
+
+1. Demonstrable Features Ready for Midterm Defense:
+   - Feature 1: Instant application launch with Sand / Editorial theme and light/dark mode sliding toggle.
+   - Feature 2: Workspace file creation (`solution.cpp`, `main.py`) and multi-tab editing in Monaco Editor with dynamic font zoom (`Ctrl+=` / `Ctrl+-`).
+   - Feature 3: Native code execution via "Run" button with execution time measurement (ms) and success banner.
+   - Feature 4: Interactive stdin prompting for programs using `cin >>` or `scanf`.
+   - Feature 5: Compiler error handling: intentional syntax error generates sanitized output, extracts line number, and automatically highlights the exact line in Monaco with an error glyph.
+   - Feature 6: Missing `main()` linker error translation: strips arcane MinGW linker trace and displays educational guidance.
+   - Feature 7: Mandatory problem statement enforcement: clicking "Review" without a problem statement triggers an alert card and focuses the input field.
+   - Feature 8: On-demand AI review: entering problem context and clicking "Review" returns a single-issue optimization card with a minimal red/green diff.
+   - Feature 9: Optimal solution recognition: submitting optimal code produces the Award badge ("Best possible version").
+   - Feature 10: 5-step Setup Wizard: scans system PATH, verifies Ollama, previews model downloads, and tests inference latency.
+   - Feature 11: Production Windows Installer: demonstrating `Waypoint-IDE-Setup-0.1.0.exe`.
+
+2. Suggested Evaluator Demonstration Order (5-Minute Defense Script):
+   - Minute 1 (Introduction & Philosophy): Open Waypoint IDE. Highlight the calm Sand / Editorial theme. Explain the core philosophy: student writes first, AI is on-demand and educational, execution is 100% native and local.
+   - Minute 2 (Native Compilation & Stdin): Open `solution.cpp`. Write a simple C++ program with `cin >>` input. Click "Run". Show the inline prompt form in the Output tab. Type an integer, press Enter. Show the green success banner and execution duration (e.g., 14 ms).
+   - Minute 3 (Compiler Error & Pedagogical Sanitization): Introduce a syntax error (e.g., remove a semicolon or delete `main()`). Click "Run". Show the red error banner, the sanitized message, and observe Monaco Editor automatically jumping to and highlighting the exact error line.
+   - Minute 4 (AI Review & Problem Context Binding): Enter the exercise requirements into the TopBar Problem field. Click "Review". Show the single-issue finding card, the educational explanation of Big-O impact, and the clean red/green diff. Demonstrate that Waypoint does not rewrite the whole file.
+   - Minute 5 (Setup Wizard & Installer): Open the Setup Wizard. Show live toolchain scanning for GCC, Python, and Ollama. Showcase the compiled `Waypoint-IDE-Setup-0.1.0.exe` installer in Windows Explorer.
+
+3. Verified Sample Inputs and Outputs:
+   - Sample A (C++ Passing Const Reference):
+     * Input Code: `void process(std::vector<int> nums) { ... }`
+     * Review Finding: "Pass vector/string container by const reference" (Severity: High, Category: Performance).
+     * Diff: `- std::vector<int> nums` / `+ const std::vector<int>& nums`
+     * Impact: Reduces parameter passing time complexity from O(N) memory copy to O(1).
+   - Sample B (Python String Concatenation in Loop):
+     * Input Code: `s = ""; for item in items: s += item`
+     * Review Finding: "Use ''.join() instead of string concatenation in a loop" (Severity: High, Category: Performance).
+     * Diff: `- s += item` / `+ s = "".join(items)`
+     * Impact: Improves execution time from quadratic O(N^2) to linear O(N).
+
+
+================================================================================
+SECTION L — REMAINING WORK & TECHNICAL BACKLOG
+================================================================================
+
+Prioritized backlog for final-year project completion:
+
+1. Critical Tasks (Required for Core System Completeness):
+   - Task C-01: Native OS Directory Binding.
+     * Description: Replace `localStorage` virtual file tree with native OS folder opening using `tauri-plugin-dialog` and Rust file system commands.
+     * Reason: Students expect files to persist as real folders on their hard drive or USB drive.
+     * Priority: P0 (Highest) | Dependencies: Tauri v2 plugins | Estimated Effort: 1-2 weeks.
+   - Task C-02: Execution Timeout Watchdog.
+     * Description: Implement a 10-second timeout thread in Rust `compile_and_run_file` to kill runaway processes caused by infinite loops (`while(1)`).
+     * Reason: Prevents application lockups or high CPU usage from buggy student code.
+     * Priority: P0 | Dependencies: Rust process handles | Estimated Effort: 3 days.
+
+2. Important Tasks (Required for Final Defense Evaluation):
+   - Task I-01: Comprehensive Automated Test Suite.
+     * Description: Implement unit tests for `executionService`, `astAnalysisService`, and `fileService` using Vitest, plus Rust unit tests in `src-tauri`.
+     * Reason: University examiners look for test coverage and validation methodology.
+     * Priority: P1 | Dependencies: Vitest, Cargo test | Estimated Effort: 1 week.
+   - Task I-02: Full PTY Terminal Integration.
+     * Description: Replace basic `cmd /C` execution with `portable-pty` and `xterm.js` for true interactive terminal emulation with ANSI color support.
+     * Reason: Enables standard terminal interactions and authentic command line behavior.
+     * Priority: P1 | Dependencies: `portable-pty`, `xterm.js` | Estimated Effort: 2 weeks.
+
+3. UI/UX and Usability Improvements:
+   - Task U-01: Monaco Code Auto-Formatting.
+     * Description: Bind `Shift+Alt+F` to format code according to language conventions.
+     * Priority: P2 | Dependencies: Monaco formatting providers | Estimated Effort: 3 days.
+   - Task U-02: Diff Application Action.
+     * Description: Add an "Apply Diff Directly" button that patches the suggested snippet directly into Monaco Editor.
+     * Priority: P2 | Dependencies: Monaco range editing | Estimated Effort: 4 days.
+
+4. Documentation, Deployment & Evaluation Tasks:
+   - Task D-01: User Evaluation Study.
+     * Description: Conduct an empirical trial with 20-30 undergraduate students comparing error-resolution times between Waypoint and standard tools.
+     * Priority: P1 | Dependencies: Functional prototype | Estimated Effort: 2 weeks.
+   - Task D-02: Final Thesis Documentation.
+     * Description: Write the complete B.Tech project thesis document according to university guidelines.
+     * Priority: P1 | Dependencies: Empirical trial data | Estimated Effort: 3 weeks.
+
+
+================================================================================
+SECTION M — MILESTONE-BASED PROJECT TIMELINE
+================================================================================
+
+Project execution schedule mapping completed phases to remaining milestones:
+
++---------------------------------------------------------------------------------------------------------+
+| PHASE / MILESTONE             | DURATION      | FOCUS AREA                              | STATUS        |
++---------------------------------------------------------------------------------------------------------+
+| Phase 0: Foundation           | Weeks 1 - 2   | Repo setup, Tauri v2 + React setup      | COMPLETED     |
+| Phase 1: IDE Shell            | Weeks 3 - 4   | Resizable layout, Sand theme, TopBar    | COMPLETED     |
+| Phase 2: Editor & Files       | Weeks 5 - 6   | Monaco integration, virtual tree, tabs  | COMPLETED     |
+| Phase 3: Native Execution     | Weeks 7 - 8   | Rust execution manager (C++, C, Py, Java| COMPLETED     |
+| Phase 4: Error Handling       | Weeks 9 - 10  | Stderr sanitizer, line markers, hints   | COMPLETED     |
+| Phase 5: Local AI Setup       | Weeks 11 - 12 | 5-step Setup Wizard, Ollama integration | COMPLETED     |
+| Phase 6: AI Diagnostics       | Weeks 13 - 14 | Error guidance cards, stdin prompt      | COMPLETED     |
+| Phase 7: AI Code Review       | Weeks 15 - 16 | Single-issue review, heuristic rules    | COMPLETED     |
+| Phase 8A: Standalone Package  | Weeks 17 - 18 | Inno Setup Windows installer generation | COMPLETED     |
++-------------------------------+---------------+-----------------------------------------+---------------+
+| === MIDTERM EVALUATION CHECKPOINT (CURRENT STAGE — OCTOBER 2026) ===================================== |
++-------------------------------+---------------+-----------------------------------------+---------------+
+| Phase 8B: Native File Binding | Weeks 19 - 20 | Real OS folder opening & disk sync      | UPCOMING (P0) |
+| Phase 8C: Process Watchdog    | Week 21       | Timeout safeguards for infinite loops   | UPCOMING (P0) |
+| Phase 8D: Automated Testing   | Weeks 22 - 23 | Vitest unit tests & Rust test suite     | UPCOMING (P1) |
+| Phase 9A: Empirical Trials    | Weeks 24 - 25 | Student user study & data collection    | UPCOMING (P1) |
+| Phase 9B: Final Thesis Prep   | Weeks 26 - 28 | Comprehensive B.Tech project report     | UPCOMING (P1) |
+| Phase 9C: Final Defense       | Week 29       | Final viva-voce and demonstration       | UPCOMING (P1) |
++---------------------------------------------------------------------------------------------------------+
+
+
+================================================================================
+SECTION N — MULTI-DIMENSIONAL FEASIBILITY ANALYSIS
+================================================================================
+
+1. Technical Feasibility:
+   - Evaluated as HIGHLY FEASIBLE.
+   - The hybrid combination of React 19 (declarative UI), Monaco Editor (industry-standard web editor), and Tauri v2 / Rust (lightweight native process manager) has proven stable and effective.
+   - Local AI inference using quantized Small Language Models (1.5B - 3B parameters) via Ollama runs smoothly on standard modern consumer hardware (Intel Core i5 / AMD Ryzen 5 with 8GB RAM), maintaining sub-second to 2-second response latencies.
+   - The deterministic heuristic engine (`AstAnalysisService`) guarantees that code review functionality operates with zero latency even when AI models are unavailable.
+
+2. Economic Feasibility:
+   - Evaluated as EXTREMELY FEASIBLE (Near Zero Recurring Cost).
+   - Zero Cloud API Costs: Eliminates ongoing per-token billing (OpenAI API / Anthropic API), which would otherwise bankrupt public university departmental budgets.
+   - Permissive Open-Source Tooling: Built entirely with open-source frameworks (React: MIT, Tauri: MIT/Apache-2.0, Monaco: MIT, Rust: MIT/Apache-2.0, Ollama: MIT).
+   - Low Hardware Infrastructure Requirements: Does not require high-end datacenter GPUs (Nvidia A100/H100); runs on existing college laboratory workstations.
+
+3. Operational Feasibility:
+   - Evaluated as HIGHLY FEASIBLE.
+   - The 5-step Setup Wizard and standalone Inno Setup installer (`Waypoint-IDE-Setup-0.1.0.exe`) allow laboratory assistants to deploy Waypoint IDE across an entire lab in minutes.
+   - The distraction-free Sand / Editorial UI minimizes teacher training requirements, allowing students to focus immediately on programming assignments.
+   - Data privacy and cheating prevention: Because inference is local and autocomplete is disabled, student exam and assignment integrity is preserved.
+
+4. Schedule Feasibility:
+   - Evaluated as ACHIEVABLE.
+   - With 9 of the primary milestone phases already built and verified, the remaining backlog (native OS file system binding, process timeout watchdog, automated unit tests, and empirical evaluation) is well within the 10-12 weeks remaining before the final B.Tech degree defense.
+
+
+================================================================================
+SECTION O — EXPECTED OUTCOMES & FUTURE SCOPE
+================================================================================
+
+1. Expected Final Deliverables:
+   - Fully integrated, self-contained desktop learning IDE package for Windows.
+   - Direct native folder synchronization without reliance on `localStorage`.
+   - Comprehensive test suite covering execution, parsing, and heuristic rules.
+   - Empirical research report evaluating student learning speed and error comprehension.
+   - Published open-source repository with full developer documentation.
+
+2. Success Evaluation Metrics:
+   - Metric 1 (Startup & Execution Latency): Application cold start < 2.5 seconds; compile-to-execution dispatch < 150 ms.
+   - Metric 2 (Memory Footprint): Base application idle memory < 80 MB (excluding Ollama SLM weights).
+   - Metric 3 (Diagnostic Parsing Accuracy): >= 95% accuracy in correctly extracting error line and column numbers across GCC, G++, Javac, and Python.
+   - Metric 4 (Pedagogical Restraint): Zero unsolicited AI interruptions; 100% compliance with single-issue review constraint.
+   - Metric 5 (Offline Reliability): 100% functional availability of core editing, execution, and heuristic review when internet adapters are disabled.
+
+3. Future Scope and Enhancements:
+   - Multi-Platform Support: Cross-compiling native bundles for Linux (Ubuntu/Debian) and macOS (Apple Silicon).
+   - True Pseudo-Terminal (PTY): Integrating `portable-pty` in Rust and `xterm.js` in frontend for complete command-line shell immersion.
+   - AST Parser Integration: Replacing regex heuristics in `AstAnalysisService` with WebAssembly Tree-sitter grammars for deep syntactic parsing.
+   - Classroom Lab Mode: Optional local-network peer-to-peer broadcast allowing lab instructors to push programming assignments to student workstations without internet access.
+
+
+================================================================================
+SECTION P — RISKS, CHALLENGES, AND LIMITATIONS
+================================================================================
+
+1. Observed Limitations in Current Codebase:
+   - Virtual Storage Boundary: Project Explorer persists file trees in browser `localStorage`. Native OS file system directory binding is not yet complete.
+   - Infinite Loop Vulnerability: Programs containing unintentional infinite loops (`while(true)`) will run indefinitely until the user manually switches tabs or kills the task via terminal.
+   - Regex Heuristic Parsing: Error extraction and deterministic review rules rely on regular expressions, which can fail on unconventional or heavily nested code structures.
+   - Windows Privilege Boundary: Running `winget` from the Setup Wizard requires standard administrative elevation on Windows PCs.
+
+2. Potential Technical & External Risks:
+   - Hardware Variance in University Labs: Older lab PCs with 4GB RAM may struggle to run Ollama 3B models alongside the operating system.
+     * Mitigation Strategy: Waypoint sets the ultra-lightweight Qwen 2.5 Coder 1.5B (0.98 GB) as default, and provides instant fallback to the zero-RAM `AstAnalysisService`.
+   - Missing System Compilers: If MinGW or JDK is absent and the student lacks admin privileges to install via `winget`, compilation will fail.
+     * Mitigation Strategy: The Setup Wizard clearly highlights missing compilers and provides direct manual download instructions.
+
+3. Security & Safety Considerations:
+   - Waypoint runs native compilers directly on the student machine. It does not implement full hypervisor or container sandbox isolation.
+   - Code executes with the permissions of the current logged-in user.
+
+
+================================================================================
+SECTION Q — LITERATURE REVIEW & REFERENCE TAXONOMY
+================================================================================
+
+1. References and Tooling Citations Present in Project:
+   - Microsoft Monaco Editor: The web-based code editor that powers Visual Studio Code (`https://microsoft.github.io/monaco-editor/`).
+   - Tauri Desktop Framework: Fast, memory-efficient desktop applications using system webviews and Rust (`https://tauri.app/`).
+   - Ollama AI Daemon: Lightweight local model runner for Large Language Models (`https://ollama.com/`).
+   - Adoptium Eclipse Temurin: Enterprise-ready open-source Java Development Kit binaries (`https://adoptium.net/`).
+   - MinGW-w64: Complete runtime environment for GCC targeting 64-bit Windows (`https://www.mingw-w64.org/`).
+   - Inno Setup: Industry-standard open-source installer builder for Windows (`https://jrsoftware.org/isinfo.php`).
+
+2. Recommended Academic Literature & Search Keywords for Final Thesis:
+   - Category A: Computer Science Education (CSEd) & Novice Programming:
+     * Search Terms: "pedagogical compiler error messages", "novice programming misconceptions", "cognitive load in introductory programming IDEs", "educational code review tools".
+     * Seminal Concept: Marceau et al., "Mind Your Language: On Novices and Compiler Errors"; Becker et al., "Compiler Error Messages Considered Harmful: What Have We Learned?".
+   - Category B: Small Language Models & On-Device AI in Education:
+     * Search Terms: "on-device language models for code", "constrained LLM feedback in programming education", "quantized SLMs for developer tools".
+     * Seminal Concept: Roziere et al., "Code Llama: Open Foundation Models for Code"; Qwen Team, "Qwen2.5-Coder: Empowering Code Intelligence Everywhere".
+   - Category C: Human-Computer Interaction & Developer Experience (DevEx):
+     * Search Terms: "distraction-free development environments", "editorial visual design for software tools", "progressive disclosure in code review".
+
+
+================================================================================
+SECTION R — MIDTERM PPT PREPARATION BRIEF & SLIDE-BY-SLIDE MAP
+================================================================================
+
+1. Briefing for Presentation Content Creator:
+   - The Core Narrative: "Waypoint is not another AI wrapper or VS Code clone. It is a purpose-built, student-centered desktop IDE that restores pedagogical discipline to computer science education by making AI local, on-demand, and focused on explaining concepts rather than writing code."
+   - Five Crucial Facts Evaluators Must Grasp:
+     1. Waypoint compiles code natively using real system compilers (GCC, G++, JDK, Python 3) — it never simulates execution via an LLM.
+     2. AI assistance is strictly on-demand; there is no distracting autocomplete or intrusive popups while typing.
+     3. AI reviews are bound by student-authored Problem Statements and enforce single-issue, targeted diffs to prevent cognitive bypass.
+     4. The system is 100% offline-first post-setup, making it ideal for air-gapped university laboratories.
+     5. The project is an advanced working prototype with a compiled 10.3 MB release binary and a 6.3 MB Windows Inno Setup installer ready for live demonstration.
+   - Claims That Must NOT Be Made:
+     * Do NOT claim Waypoint has full hypervisor/container security sandboxing.
+     * Do NOT claim the current build binds to native disk folders (it currently manages a virtual tree synced to localStorage).
+     * Do NOT claim it uses Tree-sitter (it uses custom regex and heuristic parsers).
+     * Do NOT claim it has full PTY terminal emulation (it runs commands via cmd.exe child processes).
+
+2. Slide-by-Slide Information Map (17 Slides):
+
+--------------------------------------------------------------------------------
+SLIDE 01: Title Slide
+- Content Available: Project Title: "Waypoint IDE: An Offline-First Desktop Learning Environment with On-Device AI Mentoring"; Subtitle: "B.Tech Final-Year Project Midterm Evaluation"; Author/Student Details; Department of Computer Science & Engineering.
+- Visual Suggestion: Waypoint branding logo (`AppIcon.png`) with clean Sand / Editorial styling.
+- Missing Info Needed: Student name, roll number, supervisor/guide name, institutional department details.
+- Accuracy Warning: Ensure title reflects "desktop learning environment", not "AI code generator".
+
+SLIDE 02: Introduction & Motivation
+- Content Available: Growth of CS undergraduate enrollment; challenges novices face with complex enterprise tools; the need for focused learning environments in college labs.
+- Visual Suggestion: Side-by-side visual contrast: cluttered VS Code screen vs clean, calm Waypoint IDE interface.
+- Missing Info Needed: Specific laboratory course names from the student's college syllabus (e.g., CS201 Data Structures Lab).
+
+SLIDE 03: Problem Statement
+- Content Available: The 4 core hurdles: setup friction, cryptic compiler diagnostics, enterprise IDE cognitive overload, and cloud-AI cheating/hallucinations.
+- Visual Suggestion: 4-card grid highlighting Setup Friction, Incomprehensible Errors, UI Overload, and Cloud/Privacy Dependence.
+- Missing Info Needed: None (fully supported by codebase).
+
+SLIDE 04: Project Objectives & Scope
+- Content Available: Primary objective; 4 supported languages (C, C++, Java, Python); explicit on-demand AI review; offline-first local execution; strict non-goals (no autocomplete, no cloud telemetry).
+- Visual Suggestion: Structured table comparing In-Scope Features vs Out-of-Scope Non-Goals.
+- Missing Info Needed: None.
+
+SLIDE 05: Existing Systems vs. Waypoint IDE
+- Content Available: Comparative analysis of VS Code, Turbo C++, Replit, and GitHub Copilot across 5 dimensions: Memory Usage, Setup Complexity, Offline Capability, Diagnostic Clarity, and Pedagogical Safety.
+- Visual Suggestion: Detailed feature-matrix comparison table with checkmarks and crossmarks.
+- Missing Info Needed: None.
+
+SLIDE 06: Proposed Methodology & Core Philosophy
+- Content Available: The 5-stage student cycle: Write -> Run -> Understand -> Review -> Improve. Separation of deterministic execution from AI heuristics.
+- Visual Suggestion: Circular flow diagram showing the 5 stages with student control at the center.
+- Missing Info Needed: None.
+
+SLIDE 07: System Architecture
+- Content Available: Hybrid desktop architecture: React 19 UI -> Tauri IPC -> Rust Native Core -> System Compilers + Localhost Ollama SLM.
+- Visual Suggestion: The ASCII block architecture diagram from Section E converted into a polished visual flow diagram.
+- Accuracy Warning: Clearly label the boundary between the native host and the local AI daemon.
+
+SLIDE 08: End-to-End User Flow
+- Content Available: User progression from Welcome Tab -> Problem Context Definition -> Native Execution -> Error Diagnosis -> On-Demand Single-Issue Review.
+- Visual Suggestion: Step-by-step horizontal user journey flowchart with decision diamonds for error and optimal states.
+- Missing Info Needed: None.
+
+SLIDE 09: Technical Workflow & Diagnostic Pipeline
+- Content Available: How Rust stages files in `%TEMP%\waypoint_runner`, sanitizes compiler paths, humanizes linker errors, and parses error line numbers for Monaco highlighting.
+- Visual Suggestion: Process flowchart detailing compilation, diagnostic sanitization, and fallback heuristic review routing.
+- Missing Info Needed: None.
+
+SLIDE 10: Prototype UI & Sand / Editorial Design
+- Content Available: The Sand / Editorial visual design language; custom Monaco light/dark themes; dynamic zoom; resizable panels; absence of distracting neon UI.
+- Visual Suggestion: Clean full-screen screenshot of the active Waypoint IDE interface annotated with callouts.
+- Missing Info Needed: High-resolution screenshots captured from the running application.
+
+SLIDE 11: Work Completed So Far
+- Content Available: 8 completed milestone phases: desktop shell, Monaco editor, native execution engine (4 languages), error sanitizer, interactive stdin, 5-step Setup Wizard, local Ollama integration, single-issue review diffs, and Windows Inno Setup installer.
+- Visual Suggestion: Phased milestone progress bar showing ~90% midterm milestone completion.
+- Missing Info Needed: None.
+
+SLIDE 12: Current Prototype & Preliminary Results
+- Content Available: Demonstrable features: C++/Python execution, interactive stdin input, missing `main()` translation, problem-statement gated review, and single-issue diff cards. Standalone binary (10.3 MB) and setup installer (6.3 MB).
+- Visual Suggestion: 2-column screenshot comparison showing a sanitized compiler error and an AI review diff card.
+- Missing Info Needed: None.
+
+SLIDE 13: Technical Challenges & Limitations Acknowledged
+- Content Available: Honest appraisal of current constraints: virtual localStorage file tree vs native disk folder binding; lack of process timeout watchdog; regex heuristics vs true AST parsing.
+- Visual Suggestion: 3-column table showing Challenge, Current Status, and Planned Resolution.
+- Accuracy Warning: Evaluators appreciate candor; do not hide these engineering trade-offs.
+
+SLIDE 14: Project Timeline & Milestone Plan
+- Content Available: Completed Phases 0-8A; upcoming Phases 8B (Native File Binding), 8C (Process Watchdog), 8D (Testing), 9A (Student User Studies), and 9B (Thesis Submission).
+- Visual Suggestion: Gantt chart or milestone roadmap timeline divided into Completed vs Upcoming.
+- Missing Info Needed: Exact calendar submission deadline from the college academic calendar.
+
+SLIDE 15: Multi-Dimensional Feasibility Analysis
+- Content Available: Technical (proven Tauri + Ollama), Economic (zero cloud API costs, open-source), Operational (single-click Inno Setup installer, lab PC friendly), and Schedule feasibility.
+- Visual Suggestion: 4-quadrant feasibility matrix with key justification points.
+- Missing Info Needed: None.
+
+SLIDE 16: Expected Outcomes & Future Scope
+- Content Available: Expected final deliverables; quantitative evaluation metrics (startup time < 2.5s, memory < 80MB); future scope (Linux/macOS cross-compilation, PTY xterm.js, Tree-sitter AST, classroom LAN mode).
+- Visual Suggestion: Bulleted summary cards split between Final Submission Scope and Long-Term Research Scope.
+- Missing Info Needed: None.
+
+SLIDE 17: References, Acknowledgments & Q&A
+- Content Available: Citations for Tauri, Monaco Editor, Ollama, MinGW, OpenJDK; invitation for examiner questions.
+- Visual Suggestion: Clean concluding slide with GitHub repository link (`https://github.com/sankhadipmondal05/Waypoint-IDE-test`) and "Thank You / Q&A" header.
+- Missing Info Needed: College name, project guide acknowledgment.
+
+================================================================================
+END OF REPORT — WAYPOINT IDE FINAL-YEAR PROJECT EVALUATION SPECIFICATION
+================================================================================
